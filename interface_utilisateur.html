@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Client - ProAssur</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --sidebar-bg: #1e293b;
+        }
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        /* Style du menu latéral (Sidebar) */
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            min-height: 100vh;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: #cbd5e1;
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        /* Gestion de l'affichage des onglets */
+        .tab-content-section {
+            display: none;
+        }
+        .tab-content-section.active {
+            display: block;
+        }
+        /* Zone de dépôt de fichiers */
+        .file-drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background-color: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .file-drop-zone:hover {
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-0">
+            <div class="p-4 text-center border-bottom border-secondary">
+                <h4 class="fw-bold mb-0 text-white"><i class="fa-solid fa-shield-halved text-primary me-2"></i>ProAssur</h4>
+                <small class="text-muted">Espace Client</small>
+            </div>
+            <div class="nav flex-column nav-pills mt-4" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <a class="nav-link active" href="#" data-target="tab-accueil"><i class="fa-solid fa-chart-pie me-2"></i> Accueil</a>
+                <a class="nav-link" href="#" data-target="tab-nouvelle-demande"><i class="fa-solid fa-file-medical me-2"></i> Nouvelle demande</a>
+                <a class="nav-link" href="#" data-target="tab-mes-demandes"><i class="fa-solid fa-clock-rotate-left me-2"></i> Suivi demandes</a>
+                <a class="nav-link" href="#" data-target="tab-profil"><i class="fa-solid fa-user me-2"></i> Mon Profil</a>
+                <a class="nav-link text-danger mt-5" href="#" id="btn-deconnexion"><i class="fa-solid fa-right-from-bracket me-2"></i> Déconnexion</a>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+                <h1 class="h2 fw-bold text-secondary" id="page-title">Tableau de bord</h1>
+                <div class="text-end">
+                    <span class="badge bg-light text-dark p-2 border"><i class="fa-solid fa-circle-user text- me-2"></i>Giresse Kwangue</span>
+                </div>
+            </div>
+
+            <div id="tab-accueil" class="tab-content-section active">
+                <div class="row g-4 mb-4">
+                    <div class="col-10 col-sm-6 col-xl-4">
+                        <div class="card border-0 shadow-sm p-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-3 text-primary me-3">
+                                    <i class="fa-solid fa-file-signature fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-1">Contrats Actifs</h6>
+                                    <h3 class="fw-bold mb-0">2</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-10 col-sm-6 col-xl-4">
+                        <div class="card border-0 shadow-sm p-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-warning bg-opacity-10 p-3 rounded-3 text-warning me-3">
+                                    <i class="fa-solid fa-hourglass-half fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-1">Demandes en cours</h6>
+                                    <h3 class="fw-bold mb-0" id="count-en-cours">1</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-secondary">Mes Contrats d'Assurance Actifs</h5>
+                    </div>
+                    <div class="table-responsive p-3">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>N° Police</th>
+                                    <th>Véhicule</th>
+                                    <th>Immatriculation</th>
+                                    <th>Date Échéance</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">1001009464</td>
+                                    <td>TOYOTA Hilux</td>
+                                    <td>LT 845 OA</td>
+                                    <td>15 Janvier 2027</td>
+                                    <td><span class="badge bg-success">Validé</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">1001007823</td>
+                                    <td>SUZUKI Grand Vitara</td>
+                                    <td>OU 122 AA</td>
+                                    <td>20 Septembre 2026</td>
+                                    <td><span class="badge bg-success">Validé</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-nouvelle-demande" class="tab-content-section">
+                <div class="card border-0 shadow-sm max-width-700">
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold text-secondary mb-4">Déposer vos pièces justificatives</h5>
+                        <form id="form-demande" enctype="multipart/form-data">
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">1. Carte Nationale d'Identité (CNI) <span class="text-danger">*</span></label>
+                                <div class="file-drop-zone" onclick="document.getElementById('input-cni').click()">
+                                    <i class="fa-solid fa-id-card fa-2x text-muted mb-2"></i>
+                                    <p class="mb-1 text-secondary">Cliquez ou glissez la photo de votre CNI ici</p>
+                                    <small class="text-muted">Format JPG, PNG accepté</small>
+                                    <input type="file" id="input-cni" name="cni" class="d-none" required onchange="updateFileInfo(this)">
+                                    <div class="text-success mt-2 fw-bold filename-display"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">2. Carte Grise du Véhicule <span class="text-danger">*</span></label>
+                                <div class="file-drop-zone" onclick="document.getElementById('input-cartegrise').click()">
+                                    <i class="fa-solid fa-car fa-2x text-muted mb-2"></i>
+                                    <p class="mb-1 text-secondary">Cliquez ou glissez la photo de la carte grise ici</p>
+                                    <small class="text-muted">Format JPG, PNG accepté</small>
+                                    <input type="file" id="input-cartegrise" name="carte_grise" class="d-none" required onchange="updateFileInfo(this)">
+                                    <div class="text-success mt-2 fw-bold filename-display"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">3. Permis de Conduire <span class="text-muted">(Optionnel)</span></label>
+                                <div class="file-drop-zone" onclick="document.getElementById('input-permis').click()">
+                                    <i class="fa-solid fa-address-card fa-2x text-muted mb-2"></i>
+                                    <p class="mb-1 text-secondary">Cliquez ou glissez la photo de votre permis ici</p>
+                                    <small class="text-muted">Format JPG, PNG accepté</small>
+                                    <input type="file" id="input-permis" name="permis" class="d-none" onchange="updateFileInfo(this)">
+                                    <div class="text-success mt-2 fw-bold filename-display"></div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold"><i class="fa-solid fa-paper-plane me-2"></i> Soumettre mon dossier d'assurance</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-mes-demandes" class="tab-content-section">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-secondary mb-4">Historique et Statut de mes demandes en ligne</h5>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date Demande</th>
+                                        <th>Heure</th>
+                                        <th>Documents transmis</th>
+                                        <th>Statut</th>
+                                        <th>Observation</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-suivi-body">
+                                    <tr>
+                                        <td>02 Juin 2026</td>
+                                        <td>09:14</td>
+                                        <td><small class="text-muted"><i class="fa-solid fa-paperclip me-1"></i>CNI, Carte_grise</small></td>
+                                        <td><span class="badge bg-warning text-dark">En attente</span></td>
+                                        <td>Dossier complet. En attente de traitement par un agent.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-profil" class="tab-content-section">
+                <div class="card border-0 shadow-sm" style="max-width: 600px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-secondary mb-4">Mes Informations Personnelles</h5>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Nom Complet</label>
+                            <input type="text" class="form-control" value="Kwangue Giresse" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Téléphone WhatsApp</label>
+                            <input type="text" class="form-control" value="+237 672 74 45 58" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Identifiant de connexion</label>
+                            <input type="text" class="form-control" value="giresse_pro" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+
+        
+        // 1. GESTION DU CHANGEMENT D'ONGLETS (NAVIGATION)
+        const navLinks = document.querySelectorAll(".sidebar .nav-link");
+        const sections = document.querySelectorAll(".tab-content-section");
+        const pageTitle = document.getElementById("page-title");
+
+        navLinks.forEach(link => {
+            link.addEventListener("click", function(e) {
+                // Éviter le comportement par défaut si c'est un lien "#"
+                if(this.id !== "btn-deconnexion") {
+                    e.preventDefault();
+                }
+
+                // Changer l'état actif sur les boutons du menu
+                navLinks.forEach(l => l.classList.remove("active"));
+                this.classList.add("active");
+
+                // Masquer toutes les sections et afficher celle ciblée
+                const targetId = this.getAttribute("data-target");
+                sections.forEach(section => section.classList.remove("active"));
+                
+                if(targetId) {
+                    document.getElementById(targetId).classList.add("active");
+                    // Mettre à jour le titre de la page dynamiquement
+                    pageTitle.textContent = this.textContent.trim();
+                }
+            });
+        });
+
+        // 2. MISE A JOUR VISUELLE DU NOM DU FICHIER SÉLECTIONNÉ
+        window.updateFileInfo = function(input) {
+            const displayDiv = input.parentElement.querySelector(".filename-display");
+            if (input.files.length > 0) {
+                displayDiv.innerHTML = `<i class="fa-solid fa-circle-check me-1"></i> Fichier prêt : ${input.files[0].name}`;
+            } else {
+                displayDiv.innerHTML = "";
+            }
+        }
+
+        // 3. SIMULATION DE LA SOUMISSION DU FORMULAIRE (VERS CLOUDINARY/SERVER)
+        const formDemande = document.getElementById("form-demande");
+        const tableSuiviBody = document.getElementById("table-suivi-body");
+        const countEnCours = document.getElementById("count-en-cours");
+
+        formDemande.addEventListener("submit", function(e) {
+            e.preventDefault(); // Bloque le rechargement de la page
+            
+            // Simulation d'un chargement réseau
+            alert("Simulation : Envoi des fichiers vers Cloudinary et enregistrement dans Railway en cours...");
+
+            // Génération de la date et de l'heure du jour pour la simulation
+            const maintenant = new Date();
+            const dateStr = maintenant.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+            const heureStr = maintenant.toTimeString().slice(0, 5);
+
+            // Ajout d'une nouvelle ligne dynamique dans l'onglet de suivi
+            const nouvelleLigne = document.createElement("tr");
+            nouvelleLigne.innerHTML = `
+                <td>${dateStr}</td>
+                <td>${heureStr}</td>
+                <td><small class="text-muted"><i class="fa-solid fa-paperclip me-1"></i>CNI, Carte_grise (Simulé)</small></td>
+                <td><span class="badge bg-warning text-dark">En attente</span></td>
+                <td>Dossier transmis avec succès au serveur ! En attente de traitement.</td>
+            `;
+            
+            // Insère la nouvelle demande tout en haut du tableau de suivi
+            tableSuiviBody.insertBefore(nouvelleLigne, tableSuiviBody.firstChild);
+
+            // Incrémente le compteur de l'accueil pour le réalisme
+            countEnCours.textContent = parseInt(countEnCours.textContent) + 1;
+
+            // Notification de succès
+            alert("Succès ! Votre demande a été enregistrée. Allez dans l'onglet 'Suivi demandes' pour vérifier.");
+            
+            // Réinitialise le formulaire et efface les textes des fichiers
+            formDemande.reset();
+            document.querySelectorAll(".filename-display").forEach(div => div.innerHTML = "");
+
+            // Redirige automatiquement l'utilisateur vers l'onglet de suivi
+            document.querySelector('[data-target="tab-mes-demandes"]').click();
+        });
+
+        // Simulation de la déconnexion
+        document.getElementById("btn-deconnexion").addEventListener("click", function() {
+            if(confirm("Voulez-vous vraiment vous déconnecter ?")) {
+                alert("Déconnexion simulée. Retour à la page de connexion.");
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="/bootstrap-css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/css/all.min.css">
+    <title>ProAssur - Espace Client</title>
+
+    <style>
+        body {
+            background-color: #f8fafc; /* Fond gris clair moderne */
+        }
+
+        /* --- STRUCTURE DU DASHBOARD (MOBILE FIRST) --- */
+        
+        /* 1. La Sidebar sur Mobile */
+        .sidebar {
+            background-color: #ffffff;
+            width: 100%;
+            z-index: 1030;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .sidebar-brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+        /* Zone de contenu à droite */
+        .main-content {
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        /* 💻 2. Ajustements pour les Écrans PC (A partir de 768px) */
+        @media (min-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 260px; /* Largeur fixe parfaite pour un menu latéral */
+                height: 100vh;
+                border-bottom: none;
+                border-right: 1px solid #e2e8f0;
+                box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+                display: flex !important;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            .sidebar-brand {
+                justify-content: center;
+                padding: 2rem 1rem;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .sidebar-menu {
+                display: flex !important; /* Force le menu à rester affiché sur PC */
+                flex-direction: column;
+                justify-content: space-between;
+                flex-grow: 1;
+            }
+            .main-content {
+                margin-left: 260px; /* Décale le contenu pour laisser la place au menu */
+                width: calc(100% - 260px);
+                padding: 2.5rem;
+            }
+        }
+
+        /* --- STYLES DES COMPOSANTS --- */
+        
+        /* Liens du menu */
+        .sidebar .nav-link {
+            color: #64748b; 
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 1rem;
+            transition: all 0.2s ease;
+            display: flex; 
+            align-items: center;
+        }
+        .sidebar .nav-link i {
+            font-size: 1.1rem;
+            width: 24px; 
+        }
+        .sidebar .nav-link:hover {
+            color: #4f46e5; 
+            background-color: #f1f5f9; 
+        }
+        .sidebar .nav-link.active {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+        
+        /* Cartes */
+        .stat-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Structure globale sans Row gênant pour le fixed -->
+    <div class="d-flex flex-column flex-md-row">
+        
+        <!-- BARRE LATERALE (SIDEBAR) -->
+        <nav class="sidebar">
+            
+            <!-- En-tête : Logo + Bouton Hamburger (Bouton visible uniquement sur mobile) -->
+            <div class="sidebar-brand bg-white">
+                <img src="../../images/ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid">
+                
+                <button class="btn border d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- Menu de navigation (id="menu" conservé pour ton script JS) -->
+            <div class="collapse sidebar-menu" id="menu">
+                <ul class="nav flex-column mt-3">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link rounded active" data-target="tab-accueil">
+                            <i class="fa-solid fa-home me-2"></i> Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link rounded" data-target="tab-nouvelle-demande">
+                            <i class="fa-solid fa-file-medical me-2"></i> Nouvelle demande
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link rounded" data-target="tab-suivi-demande">
+                            <i class="fa-solid fa-clock me-2"></i> Suivi demandes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link rounded" data-target="tab-profil">
+                            <i class="fa-solid fa-user me-2"></i> Mon profil
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Zone de déconnexion toujours calée en bas -->
+                <div class="p-3 border-top bg-white">
+                    <button class="btn btn-outline-danger w-100 fw-semibold rounded-3 py-2">
+                        <i class="fa-solid fa-right-from-bracket me-2"></i> Déconnexion
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- CONTENU PRINCIPAL -->
+        <main class="main-content">
+            
+            <!-- TITRE : TABLEAU DE BORD -->
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                <div class="text-start">
+                    <h2 class="text-black fw-bold mb-1">Tableau de bord</h2>
+                    <p class="text-secondary mb-0">Ravi de vous revoir, M. Owen !</p>
+                </div>
+                <span class="badge rounded-3 fs-6 p-2.5 shadow-sm" style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);">
+                    Statut : CLIENT
+                </span>
+            </div>
+
+            <!-- ONGLET : ACCUEIL -->
+            <div id="tab-accueil" class="tab-content-section">
+                <div class="row g-4">
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <div class="card stat-card p-4 bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-uppercase text-secondary small fw-bold">Demandes</h6>
+                                    <h3 class="fw-bold text-dark mb-0">02</h3>
+                                </div>
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+                                    <i class="fa-solid fa-folder-open fs-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <div class="card stat-card p-4 bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-uppercase text-secondary small fw-bold">Demandes Validées</h6>
+                                    <h3 class="fw-bold text-success mb-0">02</h3>
+                                </div>
+                                <div class="bg-success p-3 rounded-circle bg-opacity-10 text-success">
+                                    <i class="fa-solid fa-shield-halved fs-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <div class="card stat-card p-4 bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-uppercase text-secondary small fw-bold">Demandes Rejetées</h6>
+                                    <h3 class="fw-bold text-danger mb-0">02</h3>
+                                </div>
+                                <div class="bg-danger p-3 rounded-circle bg-opacity-10 text-danger">
+                                    <i class="fa-solid fa-circle-xmark fs-4"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mt-5 rounded-4 p-4 bg-white">
+                    <h5 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-list text-primary me-2"></i>Vos demandes Validées</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">ID Demande</th>
+                                    <th scope="col">Véhicule</th>
+                                    <th scope="col">Date émission</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">PA-000000001</td>
+                                    <td>TOYOTA HILUX</td>
+                                    <td>12-07-2026</td>
+                                    <td><button class="btn btn-sm btn-light border fw-semibold">Détails</button></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">PA-000000002</td>
+                                    <td>FERRARI</td>
+                                    <td>16-04-2026</td>
+                                    <td><button class="btn btn-sm btn-light border fw-semibold">Détails</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET : NOUVELLE DEMANDE -->
+            <div id="tab-nouvelle-demande" class="tab-content-section" style="display: none;">
+                <div class="container-fluid bg-white p-4 p-md-5 rounded-4 shadow-sm border-0">
+                    <form id="form-demande" enctype="multipart/form-data">
+                        <div class="d-flex align-items-center mb-4 border-bottom pb-2">
+                           <i class="fa-solid fa-circle-plus fs-3 text-primary me-2"></i>
+                           <h3 class="fw-bold mb-0">Nouvelle demande de cotation</h3> 
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">1. Carte Nationale d'Identité (CNI) <span class="text-danger">*</span></label>
+                            <div class="p-3 border rounded bg-light text-center">
+                                <i class="fa-solid fa-id-card fa-2x text-muted mb-2"></i>
+                                <p class="mb-1 text-secondary">Sélectionnez la photo de votre <strong>CNI ici</strong></p>
+                                <small class="text-muted d-block mb-2">Format JPG, PNG accepté</small>
+                                <input type="file" id="input-cni" name="cni" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">2. Permis de conduire <span class="text-secondary fw-normal">(Optionnel)</span></label>
+                            <div class="p-3 border rounded bg-light text-center">
+                                <i class="fa-solid fa-car fa-2x text-muted mb-2"></i>
+                                <p class="mb-1 text-secondary">Sélectionnez la photo de votre <strong>Permis ici</strong></p>
+                                <small class="text-muted d-block mb-2">Format JPG, PNG accepté</small>
+                                <input type="file" id="input-permis" name="input-permis" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">3. Carte grise <span class="text-danger">*</span></label>
+                            <div class="p-3 border rounded bg-light text-center">
+                                <i class="fa-solid fa-file-invoice fa-2x text-muted mb-2"></i>
+                                <p class="mb-1 text-secondary">Sélectionnez la photo de votre <strong>Carte grise ici</strong></p>
+                                <small class="text-muted d-block mb-2">Format JPG, PNG accepté</small>
+                                <input type="file" id="input-carte-grise" name="input-carte-grise" class="form-control">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-bold shadow-sm mt-3">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Soumettre mon dossier d'assurance
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ONGLET : SUIVI DEMANDES -->
+            <div id="tab-suivi-demande" class="tab-content-section" style="display: none;">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    <h5 class="fw-bold text-dark mb-1"><i class="fa-solid fa-chart-line text-primary me-2"></i>Suivi des demandes</h5>
+                    <p class="text-secondary small mb-4">Historique et statut en temps réel de vos dossiers.</p>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Date demande</th>
+                                    <th scope="col">Heure</th>
+                                    <th scope="col">Véhicule</th>
+                                    <th scope="col">Documents transmis</th>
+                                    <th scope="col">Statut</th>
+                                    <th scope="col">Observation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>12-07-2026</td>
+                                    <td>08:47</td>
+                                    <td class="fw-bold">TOYOTA HILUX</td>
+                                    <td>
+                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> CNI</a>
+                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> Carte Grise</a>
+                                    </td>
+                                    <td><span class="badge bg-success px-2.5 py-1.5 rounded-pill">Validée</span></td>
+                                    <td class="small text-muted">Dossier complet. En attente de traitement par un agent.</td>
+                                </tr>
+                                <tr>
+                                    <td>12-07-2026</td>
+                                    <td>08:47</td>
+                                    <td class="fw-bold">FERRARI</td>
+                                    <td>
+                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> CNI</a>
+                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> Carte Grise</a>
+                                    </td>
+                                    <td><span class="badge bg-success px-2.5 py-1.5 rounded-pill">Validée</span></td>
+                                    <td class="small text-muted">Dossier complet. En attente de traitement par un agent.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET : MON PROFIL -->
+            <div id="tab-profil" class="tab-content-section" style="display: none;">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-xl-8 card border-0 shadow-sm p-4 p-md-5 bg-white rounded-4">
+                        <form action="" class="row g-3" id="formulaire_profil">
+                            <div class="d-flex justify-content-center pb-3 border-bottom mb-3">
+                                <img src="../../images/ProAssur_LOGO+WafaAssurance4.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+                            </div>
+                            <h4 class="fw-bold text-dark mb-3"><i class="fa-solid fa-user-gear text-primary me-2"></i>Informations Personnelles</h4>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="nom_profil">Nom</label>
+                                <input class="form-control bg-light" type="text" id="nom_profil" placeholder="NDOGMO" readonly>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="prenom_profil">Prénom</label>
+                                <input class="form-control bg-light" type="text" id="prenom_profil" placeholder="Olivier" readonly>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-semibold" for="identifiant_profil">Identifiant (Email)</label>
+                                <input class="form-control bg-light" type="email" id="identifiant_profil" placeholder="XXX@gmail.com" readonly>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-semibold" for="tel_profil">Téléphone <strong>(WhatsApp)</strong></label>
+                                <input class="form-control bg-light" type="tel" id="tel_profil" placeholder="6 XX XX XX XX" readonly>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="adresse_profil">Adresse</label>
+                                <input class="form-control bg-light" type="text" id="adresse_profil" placeholder="MAKEPE-BONAMOUSSADI" readonly>
+                            </div>
+            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="sexe_profil">Sexe</label>
+                                <select class="form-select bg-light" id="sexe_profil" disabled>
+                                    <option value="M" selected>Masculin</option>
+                                    <option value="F">Féminin</option>
+                                </select>
+                            </div>
+                            <div class="col-12 d-grid gap-2 mt-4">
+                                <button type="button" class="btn btn-primary fw-bold py-2 shadow-sm" id="edit_btn">
+                                    <i class="fa-solid fa-pen-to-square me-2"></i> Modifier mes informations
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/client-dash.js"></script>
+</body>
+</html>

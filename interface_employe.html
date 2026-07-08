@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Employé - ProAssur CRM & IA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #0ea5e9;
+            --sidebar-bg: #0f172a;
+            --accent-color: #f43f5e;
+        }
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        /* Style de la Sidebar Professionnelle */
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            min-height: 100vh;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: #94a3b8;
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(14, 165, 233, 0.15);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        /* Gestion des onglets */
+        .tab-content-section {
+            display: none;
+        }
+        .tab-content-section.active {
+            display: block;
+        }
+        /* Zone de scan de dossier global */
+        .scan-drop-zone {
+            border: 3px dashed var(--primary-color);
+            background-color: rgba(14, 165, 233, 0.02);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .scan-drop-zone:hover {
+            background-color: rgba(14, 165, 233, 0.08);
+            transform: scale(1.01);
+        }
+        /* Style du Chatbot Assistant Flottant */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transition: all 0.3s ease-in-out;
+            transform: translateY(110%);
+        }
+        .chatbot-container.open {
+            transform: translateY(0);
+        }
+        .chatbot-header {
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 12px;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chatbot-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f8fafc;
+            font-size: 14px;
+        }
+        .chat-bubble {
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-width: 85%;
+        }
+        .chat-bubble.assistant {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            align-self: flex-start;
+        }
+        .chat-bubble.user {
+            background-color: var(--primary-color);
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .chatbot-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--sidebar-bg);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 15px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 999;
+            font-weight: bold;
+        }
+        /* Barres de progression pour simuler des statistiques graphiques */
+        .custom-progress {
+            height: 25px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-0">
+            <div class="p-4 text-center border-bottom border-secondary">
+                <h4 class="fw-bold mb-0 text-info"><i class="fa-solid fa-building-shield me-2"></i>ProAssur</h4>
+                <small class="text-muted">Espace Agent & Gestion</small>
+            </div>
+            <div class="nav flex-column nav-pills mt-4" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <a class="nav-link active" href="#" data-target="tab-demandes"><i class="fa-solid fa-envelope-open-text me-2"></i> Demandes Reçues <span class="badge bg-danger ms-2">1</span></a>
+                <a class="nav-link" href="#" data-target="tab-scan-ia"><i class="fa-solid fa-robot me-2"></i> Scanner un dossier (IA)</a>
+                <a class="nav-link" href="#" data-target="tab-gestion-contrats"><i class="fa-solid fa-folder-tree me-2"></i> Catalogue Contrats</a>
+                <a class="nav-link" href="#" data-target="tab-statistiques"><i class="fa-solid fa-chart-line me-2"></i> Statistiques & Prod</a>
+                <a class="nav-link text-warning mt-5" href="#" id="btn-logout"><i class="fa-solid fa-power-off me-2"></i> Déconnexion</a>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+                <h1 class="h2 fw-bold text-dark" id="page-title">Demandes Reçues</h1>
+                <div>
+                    <span class="badge bg-dark p-2 fs-6"><i class="fa-solid fa-user-tie text-info me-2"></i>Agent : Florence M. (Bureau 2012)</span>
+                </div>
+            </div>
+
+            <div id="tab-demandes" class="tab-content-section active">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-secondary"><i class="fa-solid fa-list-check me-2 text-primary"></i>Flux des demandes clients en attente</h5>
+                    </div>
+                    <div class="table-responsive p-3">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Téléphone</th>
+                                    <th>Date d'envoi</th>
+                                    <th>Pièces jointes</th>
+                                    <th>Statut</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">Kwangue Giresse</td>
+                                    <td>+237 672 74 45 58</td>
+                                    <td>Aujourd'hui, 09:14</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary me-1" onclick="alert('Ouverture de la CNI sur Cloudinary')"><i class="fa-solid fa-id-card"></i> CNI</button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="alert('Ouverture de la Carte Grise sur Cloudinary')"><i class="fa-solid fa-car"></i> Carte_Grise</button>
+                                    </td>
+                                    <td><span class="badge bg-warning text-dark" id="status-badge-sim">En attente</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success fw-bold" id="btn-traiter-sim" onclick="simulerTraitement()"><i class="fa-solid fa-hand-holding-hand me-1"></i> Prendre en charge</button>
+                                        <button class="btn btn-sm btn-success fw-bold d-none" id="btn-whatsapp-sim" onclick="ouvrirWhatsApp()"><i class="fa-brands fa-whatsapp fa-lg me-1"></i> Alerter par WhatsApp</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-scan-ia" class="tab-content-section">
+                <div class="alert alert-info border-0 shadow-sm mb-4">
+                    <i class="fa-solid fa-lightbulb me-2"></i><strong>Innovation :</strong> Plus besoin de trier manuellement vos fichiers ! Glissez un dossier ou un ensemble de fichiers PDF. L'IA va analyser le texte pour identifier s'il s'agit d'un contrat, d'une quittance ou d'une attestation ORASS, puis extraire les données.
+                </div>
+
+                <div class="scan-drop-zone mb-4" onclick="document.getElementById('input-folder').click()">
+                    <i class="fa-solid fa-folder-open fa-3x text-info mb-3"></i>
+                    <h5 class="fw-bold text-dark">Déposer le dossier ou les fichiers PDF d'ORASS ici</h5>
+                    <p class="text-muted">L'application va analyser intelligemment chaque document du lot</p>
+                    <input type="file" id="input-folder" class="d-none" multiple onchange="simulerScanDossier(this)">
+                </div>
+
+                <div class="card border-0 shadow-sm d-none" id="card-resultats-scan">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold text-success"><i class="fa-solid fa-square-poll-horizontal me-2"></i>Documents identifiés et extraits par l'IA</h5>
+                    </div>
+                    <div class="table-responsive p-3">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nom du fichier d'origine</th>
+                                    <th>Type détecté par l'IA</th>
+                                    <th>Clé primaire identifiée</th>
+                                    <th>Montant / Réf</th>
+                                    <th>Confiance IA</th>
+                                    <th>Statut d'archivage</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scan-results-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-gestion-contrats" class="tab-content-section">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" placeholder="Rechercher par Numéro de police, Nom d'assuré, Immatriculation...">
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-dark w-100 fw-bold"><i class="fa-solid fa-magnifying-glass me-2"></i>Rechercher</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="table-responsive p-3">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Code Bureau</th>
+                                    <th>N° Police</th>
+                                    <th>Assuré</th>
+                                    <th>Immatriculation</th>
+                                    <th>Type Contrat</th>
+                                    <th>Statut Base</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2012</td>
+                                    <td class="fw-bold">1001009464</td>
+                                    <td>Kwangue Giresse</td>
+                                    <td>LT 845 OA</td>
+                                    <td>Affaire Nouvelle</td>
+                                    <td><span class="badge bg-success">Validé Production</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2012</td>
+                                    <td class="fw-bold">1001007823</td>
+                                    <td>Kamgaing Arthur</td>
+                                    <td>OU 122 AA</td>
+                                    <td>Renouvellement</td>
+                                    <td><span class="badge bg-secondary">Brouillon</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-statistiques" class="tab-content-section">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-dark text-white p-4 shadow-sm">
+                            <h6 class="text-muted">Chiffre d'Affaires Global (Mois)</h6>
+                            <h2 class="fw-bold text-info">4 850 000 FCFA</h2>
+                            <small class="text-success"><i class="fa-solid fa-circle-arrow-up me-1"></i>+12% par rapport au mois dernier</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-white p-4 shadow-sm">
+                            <h6 class="text-muted">Documents Traités via l'IA</h6>
+                            <h2 class="fw-bold text-dark" id="stat-ia-count">148</h2>
+                            <small class="text-muted">Taux d'erreur de saisie évité : <strong>99,4%</strong></small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm p-4">
+                    <h5 class="fw-bold text-secondary mb-4">Volume de Production par Catégorie de Risque (F CFA)</h5>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold">Responsabilité Civile Automobile (CAT 1)</span>
+                            <span class="text-muted">3 200 000 FCFA (65%)</span>
+                        </div>
+                        <div class="progress custom-progress">
+                            <div class="progress-bar bg-info" style="width: 65%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold">Transport Public de Voyageurs (CAT 2)</span>
+                            <span class="text-muted">1 100 000 FCFA (23%)</span>
+                        </div>
+                        <div class="progress custom-progress">
+                            <div class="progress-bar bg-primary" style="width: 23%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold">Véhicules de Mission & Flottes (CAT 3)</span>
+                            <span class="text-muted">550 000 FCFA (12%)</span>
+                        </div>
+                        <div class="progress custom-progress">
+                            <div class="progress-bar bg-secondary" style="width: 12%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<button class="chatbot-toggle-btn" onclick="toggleChatbot()">
+    <i class="fa-solid fa-comments me-2"></i> Assistant Gemini IA
+</button>
+
+<div class="chatbot-container" id="chatbot-box">
+    <div class="chatbot-header">
+        <span class="fw-bold"><i class="fa-solid fa-robot text-info me-2"></i>Gemini Pro Expert</span>
+        <button class="btn btn-sm btn-close btn-close-white" onclick="toggleChatbot()"></button>
+    </div>
+    <div class="chatbot-messages d-flex flex-column" id="chat-messages-box">
+        <div class="chat-bubble assistant">
+            Bonjour Florence ! Je suis votre assistant IA connecté à ProAssur. Vous pouvez me poser des questions sur les règles de tarification de la zone CIMA ou me demander d'analyser un texte de contrat complexe.
+        </div>
+    </div>
+    <div class="p-2 border-top bg-white">
+        <div class="input-group">
+            <input type="text" id="chat-input" class="form-control form-control-sm" placeholder="Posez une question à l'IA...">
+            <button class="btn btn-sm btn-info text-white fw-bold" onclick="envoyerMessageChatbot()">Envoyer</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // 1. COMMUTATION COMPLÈTE DES ONGLETS
+        const navLinks = document.querySelectorAll(".sidebar .nav-link");
+        const sections = document.querySelectorAll(".tab-content-section");
+        const pageTitle = document.getElementById("page-title");
+
+        navLinks.forEach(link => {
+            link.addEventListener("click", function(e) {
+                if(this.id !== "btn-logout") e.preventDefault();
+
+                navLinks.forEach(l => l.classList.remove("active"));
+                this.classList.add("active");
+
+                const targetId = this.getAttribute("data-target");
+                sections.forEach(section => section.classList.remove("active"));
+                
+                if(targetId) {
+                    document.getElementById(targetId).classList.add("active");
+                    pageTitle.textContent = this.textContent.trim().split('\n')[0];
+                }
+            });
+        });
+    });
+
+    // 2. SIMULATION DE PRISE EN CHARGE D'UNE DEMANDE CLIENT
+    function simulerTraitement() {
+        document.getElementById("status-badge-sim").className = "badge bg-info text-dark";
+        document.getElementById("status-badge-sim").textContent = "En cours";
+        alert("La demande est passée sous votre responsabilité. Le statut a été synchronisé sur Railway.");
+        
+        // On remplace le bouton par l'option WhatsApp
+        document.getElementById("btn-traiter-sim").classList.add("d-none");
+        document.getElementById("btn-whatsapp-sim").classList.remove("d-none");
+    }
+
+    // 3. ENVOI NOTIFICATION WHATSAPP PRÉ-REMPLIE
+    function ouvrirWhatsApp() {
+        const numero = "237672744558"; 
+        const message = encodeURIComponent("Bonjour M. Kwangue Giresse, c'est Florence de ProAssur. Nous avons le plaisir de vous informer que votre dossier de souscription a été validé par notre équipe. Votre contrat est prêt à être retiré dans notre bureau de Bonamoussadi dès acquittement de votre prime. Merci pour votre confiance !");
+        window.open(`https://wa.me/${numero}?text=${message}`, '_blank');
+    }
+
+    // 4. ALGORITHME DE SIMULATION DU SCAN DE DOSSIER GLOBAL (TRI INTELLIGENT)
+    function simulerScanDossier(input) {
+        if(input.files.length === 0) return;
+
+        alert(`Lancement de l'analyse automatique sur les ${input.files.length} fichiers détectés...`);
+        
+        const tbody = document.getElementById("scan-results-body");
+        tbody.innerHTML = ""; // Vider le tableau précédent
+        
+        // Simulation des réponses de l'IA pour chaque fichier
+        Array.from(input.files).forEach((file, index) => {
+            let typeDetecte = "Document Inconnu";
+            let cleIdentifiee = "Aucune";
+            let montantRef = "0 FCFA";
+            let confiance = "99.1%";
+
+            // On simule une détection automatique intelligente basée sur des mots-clés du nom du fichier
+            const nameLower = file.name.toLowerCase();
+            if(nameLower.includes("contrat") || nameLower.includes("police") || nameLower.includes("aff")) {
+                typeDetecte = "Contrat Physique ORASS";
+                cleIdentifiee = `POL-${1001009000 + index}`;
+                montantRef = "Affaire Nouvelle";
+                confiance = "98.7%";
+            } else if (nameLower.includes("quit") || nameLower.includes("paye")) {
+                typeDetecte = "Quittance Financière";
+                cleIdentifiee = `QUIT-${500450 + index}`;
+                montantRef = "185 000 FCFA";
+                confiance = "99.6%";
+            } else if (nameLower.includes("rose") || nameLower.includes("carte")) {
+                typeDetecte = "Carte Rose CIMA";
+                cleIdentifiee = `CR-${88450 + index}`;
+                montantRef = "Zone CEMAC";
+                confiance = "97.4%";
+            } else if (nameLower.includes("attestation") || nameLower.includes("bleu")) {
+                typeDetecte = "Attestation d'Assurance";
+                cleIdentifiee = `ATT-${700850 + index}`;
+                montantRef = "Valide 12 mois";
+                confiance = "99.2%";
+            }
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><i class="fa-solid fa-file-pdf text-danger me-2"></i><strong>${file.name}</strong></td>
+                <td><span class="badge bg-primary">${typeDetecte}</span></td>
+                <td class="font-monospace text-secondary">${cleIdentifiee}</td>
+                <td><span class="fw-bold">${montantRef}</span></td>
+                <td class="text-success fw-bold">${confiance}</td>
+                <td><span class="badge bg-success"><i class="fa-solid fa-cloud-arrow-up me-1"></i> Enregistré dans Railway</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Afficher la section des résultats
+        document.getElementById("card-resultats-scan").classList.remove("d-none");
+        
+        // Mettre à jour les compteurs statistiques
+        const statCount = document.getElementById("stat-ia-count");
+        statCount.textContent = parseInt(statCount.textContent) + input.files.length;
+    }
+
+    // 5. GESTION DU CHATBOT ASSISTANT IA (GEMINI)
+    function toggleChatbot() {
+        document.getElementById("chatbot-box").classList.toggle("open");
+    }
+
+    function envoyerMessageChatbot() {
+        const input = document.getElementById("chat-input");
+        const txt = input.value.trim();
+        if(!txt) return;
+
+        const box = document.getElementById("chat-messages-box");
+
+        // Message Utilisateur
+        const uBubble = document.createElement("div");
+        uBubble.className = "chat-bubble user";
+        uBubble.textContent = txt;
+        box.appendChild(uBubble);
+        
+        input.value = ""; // Vider l'input
+        box.scrollTop = box.scrollHeight; // Scroll automatique
+
+        // Simulation de la réponse intelligente de Gemini
+        setTimeout(() => {
+            const aBubble = document.createElement("div");
+            aBubble.className = "chat-bubble assistant";
+            
+            // Logique de réponse dynamique ultra-réaliste pour ton projet
+            if(txt.toLowerCase().includes("cima") || txt.toLowerCase().includes("loi")) {
+                aBubble.innerHTML = "D'après l'article 200 du Code CIMA, la prime d'assurance est payable d'avance à la souscription du contrat ou à l'échéance de l'avenant. Aucune attestation ne peut être délivrée sans paiement préalable.";
+            } else if (txt.toLowerCase().includes("tva")) {
+                aBubble.innerHTML = "Au Cameroun, la Taxe sur la Valeur Ajoutée (TVA) applicable sur les primes d'assurance automobile est de 19,25% (17,5% principal + 10% CAC). Elle est calculée directement sur la prime nette globale.";
+            } else {
+                aBubble.innerHTML = `J'ai bien pris en compte votre consigne concernant "${txt}". En tant qu'IA Gemini intégrée, je peux interroger les tables de primes sur Railway pour vous extraire ces ratios financiers.`;
+            }
+            
+            box.appendChild(aBubble);
+            box.scrollTop = box.scrollHeight;
+        }, 1000);
+    }
+</script>
+</body>
+</html>

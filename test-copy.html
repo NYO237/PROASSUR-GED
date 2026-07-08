@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProAssur SA - Assurance Automobile Cameroun</title>
+    <link rel="stylesheet" href="/bootstrap-css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/css/all.min.css">
+    <style>
+      :root {
+        --bleu-1: #4f46e5;
+        --bleu-2: #06b6d4;
+        --slate: #64748b;
+        --bg-page: #f8fafc;
+      }
+
+      body {
+        background-color: var(--bg-page);
+        color: #1e293b;
+      }
+
+      .navbar-proassur {
+        background-color: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .navbar-proassur .nav-link {
+        color: var(--slate);
+        font-weight: 500;
+        margin: 0 0.35rem;
+      }
+      .navbar-proassur .nav-link:hover {
+        color: var(--bleu-2);
+      }
+      .navbar-proassur img {
+        max-height: 90px;
+      }
+      .btn-gradient {
+        color: #ffffff !important;
+        background: linear-gradient(135deg, var(--bleu-1) 0%, var(--bleu-2) 100%);
+        border: none;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        font-weight: 600;
+      }
+      .btn-gradient:hover {
+        color: #ffffff !important;
+        opacity: 0.92;
+      }
+      .btn-outline-gradient {
+        color: var(--bleu-2);
+        border: 1.5px solid var(--bleu-2);
+        font-weight: 600;
+        background: transparent;
+      }
+      .btn-outline-gradient:hover {
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--bleu-1) 0%, var(--bleu-2) 100%);
+        border-color: transparent;
+      }
+
+      /* HERO */
+      .hero {
+        background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 60%);
+        border-radius: 0 0 2.5rem 2.5rem;
+        padding: 4rem 0 5rem;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: -120px;
+        right: -120px;
+        width: 360px;
+        height: 360px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(79,70,229,0.16) 0%, rgba(79,70,229,0) 70%);
+      }
+
+      .hero{
+        background: linear-gradient(135deg, rgba(23, 21, 62, 0.8) 0%, rgba(39, 33, 33, 0.8) 100%), 
+                        url('/ProAssur_Photo.jpeg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
+      }
+
+      
+      .hero h1 {
+        font-weight: 800;
+        line-height: 1.15;
+        color: #0f172a;
+      }
+      .hero .accent {
+        background: linear-gradient(135deg, var(--bleu-1) 0%, var(--bleu-2) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .badge-soft {
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--bleu-2);
+        font-weight: 600;
+        border: 1px solid rgba(79, 70, 229, 0.18);
+        border-radius: 0.6rem;
+        padding: 0.4rem 0.85rem;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      /* STAT CARDS (réutilise le style .stat-card du dashboard) */
+      .stat-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+        background: #fff;
+      }
+      .stat-card:hover { transform: translateY(-2px); }
+      .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--bleu-2);
+      }
+
+      /* SERVICES */
+      .service-card {
+        border: none;
+        border-radius: 1.25rem;
+        background: #fff;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+        padding: 2rem 1.6rem;
+        height: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -8px rgba(6, 182, 212, 0.22);
+      }
+      .service-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--bleu-1) 0%, var(--bleu-2) 100%);
+        color: #fff;
+        font-size: 1.3rem;
+        margin-bottom: 1.1rem;
+      }
+
+      /* PARCOURS / ETAPES */
+      .step {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+        height: 100%;
+        position: relative;
+      }
+      .step .step-num {
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: #fff;
+        background: linear-gradient(135deg, var(--bleu-1) 0%, var(--bleu-2) 100%);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.9rem;
+      }
+
+      /* CONFIANCE / GROUPE */
+      .trust-section {
+        background: #ffffff;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+      }
+
+      /* CTA */
+      .cta-band {
+        background: linear-gradient(135deg, var(--bleu-1) 0%, var(--bleu-2) 100%);
+        border-radius: 1.75rem;
+        color: #fff;
+      }
+
+      footer {
+        background: #0f172a;
+        color: #cbd5e1;
+      }
+      footer a { color: #e2e8f0; text-decoration: none; }
+      footer a:hover { color: #fff; }
+      footer h6 { color: #fff; font-weight: 700; }
+
+      .section-title-eyebrow {
+        color: var(--bleu-2);
+        font-weight: 700;
+        font-size: 0.82rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-proassur sticky-top py-2">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+          <img src="ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMain">
+          <ul class="navbar-nav mx-auto gap-1">
+            <li class="nav-item"><a class="nav-link" href="#produits">Nos garanties</a></li>
+            <li class="nav-item"><a class="nav-link" href="#parcours">Comment ça marche ?</a></li>
+            <li class="nav-item"><a class="nav-link" href="#groupe">Qui sommes-nous ?</a></li>
+            <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          </ul>
+          <div class="d-flex gap-2 mt-3 mt-lg-0">
+            <a href="/login" class="btn btn-outline-gradient rounded-3 px-4">Votre Espace</a>
+            <!-- <a href="/demande_devis" class="btn btn-gradient rounded-3 px-4">Demander un devis</a> -->
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero">
+      <div class="container">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-6">
+            <span class="badge-soft mb-3">
+              <i class="fa-solid fa-shield-halved"></i> Filiale du Groupe Wafa Assurance
+            </span>
+            <h1 class="display-5 mb-4 text-light">
+              Votre véhicule assuré,<br>
+              <span class="accent">votre route sans souci.</span>
+            </h1>
+            <p class="text-secondary fs-5 mb-4">
+              PROASSUR SA protège les conducteurs camerounais depuis 2001 avec des garanties
+              automobiles claires, un agrément CIMA et un réseau de bureaux directs à Douala.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+              <a href="/login" class="btn btn-gradient rounded-3 px-4 py-2 fw-semibold">
+                <i class="fa-solid fa-car-side me-2"></i>Connectez vous
+              </a>
+              <a href="#produits" class="btn btn-outline-gradient rounded-3 px-4 py-2 fw-semibold">
+                Découvrir nos garanties
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="row g-3">
+              <div class="col-6">
+                <div class="stat-card p-4 text-center">
+                  <div class="stat-number">5 Mds</div>
+                  <div class="text-secondary small fw-semibold">FCFA de capital social</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="stat-card p-4 text-center">
+                  <div class="stat-number">2001</div>
+                  <div class="text-secondary small fw-semibold">Agrément CIMA obtenu</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="stat-card p-4 text-center">
+                  <div class="stat-number">65%</div>
+                  <div class="text-secondary small fw-semibold">Détenus par Wafa Assurance</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="stat-card p-4 text-center">
+                  <div class="stat-number">24h</div>
+                  <div class="text-secondary small fw-semibold">Délai de délivrance carte rose</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- GARANTIES / PRODUITS -->
+    <section id="produits" class="container py-5 my-3">
+      <div class="text-center mb-5">
+        <div class="section-title-eyebrow mb-2">Nos garanties automobiles</div>
+        <h2 class="fw-bold">Une protection adaptée à chaque véhicule</h2>
+        <p class="text-secondary col-lg-7 mx-auto">
+          Du véhicule de tourisme à la camionnette utilitaire, nous couvrons les catégories
+          encadrées par le code CIMA avec des formules claires.
+        </p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+          <div class="service-card">
+            <div class="service-icon"><i class="fa-solid fa-car"></i></div>
+            <h5 class="fw-bold mb-2">Responsabilité Civile</h5>
+            <p class="text-secondary small mb-0">
+              La garantie obligatoire, à capital illimité, qui couvre les dommages causés aux tiers.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="service-card">
+            <div class="service-icon"><i class="fa-solid fa-fire"></i></div>
+            <h5 class="fw-bold mb-2">Recours Tierce Incendie</h5>
+            <p class="text-secondary small mb-0">
+              Protection étendue contre l'incendie et les recours de tiers sur votre véhicule.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="service-card">
+            <div class="service-icon"><i class="fa-solid fa-user-injured"></i></div>
+            <h5 class="fw-bold mb-2">Individuelle Personne Transportée</h5>
+            <p class="text-secondary small mb-0">
+              Capitaux décès, invalidité et frais médicaux pour vous et vos passagers.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="service-card">
+            <div class="service-icon"><i class="fa-solid fa-id-card"></i></div>
+            <h5 class="fw-bold mb-2">Carte Rose &amp; Attestation</h5>
+            <p class="text-secondary small mb-0">
+              Délivrance rapide de votre carte rose CEDEAO et de votre attestation d'assurance.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARCOURS -->
+    <section id="parcours" class="py-5 my-3" style="background:#fff;">
+      <div class="container py-4">
+        <div class="text-center mb-5">
+          <div class="section-title-eyebrow mb-2">Comment ça marche ?</div>
+          <h2 class="fw-bold">Votre contrat en 4 étapes</h2>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-6 col-lg-3">
+            <div class="step">
+              <div class="step-num">1</div>
+              <h6 class="fw-bold">Faites votre demande</h6>
+              <p class="text-secondary small mb-0">Déposez les documents de votre véhicule en ligne ou en agence.</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="step">
+              <div class="step-num">2</div>
+              <h6 class="fw-bold">Un agent vous contacte</h6>
+              <p class="text-secondary small mb-0">Un employé du bureau direct prend en charge votre dossier.</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="step">
+              <div class="step-num">3</div>
+              <h6 class="fw-bold">Validation du contrat</h6>
+              <p class="text-secondary small mb-0">Vos garanties et votre prime sont calculées et confirmées.</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="step">
+              <div class="step-num">4</div>
+              <h6 class="fw-bold">Venez recuperer vos documents</h6>
+              <p class="text-secondary small mb-0">Contrat, carte rose et attestation vous sont remis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GROUPE / CONFIANCE -->
+    <section id="groupe" class="container py-5 my-3">
+      <div class="trust-section p-4 p-lg-5">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-6">
+            <div class="section-title-eyebrow mb-2">Qui sommes-nous ?</div>
+            <h2 class="fw-bold mb-3">Une compagnie panafricaine, ancrée à Douala</h2>
+            <p class="text-secondary mb-3">
+              PROASSUR SA est une société anonyme régie par le code CIMA, dont l'une des branche siège
+              à Douala ,Tradex  Bonamoussadi. Constituée en 2000,
+              elle obtient son agrément d'exercice en 2001 sur le territoire camerounais.
+            </p>
+            <p class="text-secondary mb-4">
+              Depuis 2019, le groupe marocain Wafa Assurance détient 65% du capital de PROASSUR SA,
+              renforçant sa solidité financière au service des assurés camerounais.
+            </p>
+            <a href="#contact" class="btn btn-outline-gradient rounded-3 px-4">
+              <i class="fa-solid fa-location-dot me-2"></i>Trouver un bureau direct
+            </a>
+          </div>
+          <div class="col-lg-6">
+            <div class="row g-3">
+              <div class="col-6">
+                <div class="stat-card p-4">
+                  <i class="fa-solid fa-building-columns text-secondary mb-2"></i>
+                  <div class="fw-bold">RC/DLA/2023/B/1092</div>
+                  <div class="text-secondary small">Registre de commerce</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="stat-card p-4">
+                  <i class="fa-solid fa-globe text-secondary mb-2"></i>
+                  <div class="fw-bold">Groupe Wafa</div>
+                  <div class="text-secondary small">Assurance Maroc-Cameroun</div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="stat-card p-4">
+                  <i class="fa-solid fa-scale-balanced text-secondary mb-2"></i>
+                  <div class="fw-bold">Code CIMA</div>
+                  <div class="text-secondary small">Entreprise régie par la zone CIMA, garantissant la conformité de vos contrats d'assurance</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="container py-4 my-4">
+      <div class="cta-band p-5 text-center">
+        <h2 class="fw-bold mb-3">Prêt à assurer votre véhicule ?</h2>
+        <p class="mb-4 opacity-90 col-lg-7 mx-auto">
+          Nos équipes vous accompagnent pour choisir la formule adaptée à votre usage,
+          qu'il s'agisse d'un véhicule de tourisme ou d'une camionnette utilitaire.
+        </p>
+        <a href="/login" class="btn btn-light rounded-3 px-5 py-2 fw-bold">
+          Connectez vous 
+        </a>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="contact" class="pt-5 pb-4 mt-4">
+      <div class="container">
+        <div class="row g-4 mb-4">
+          <div class="col-lg-4">
+            <img src="ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" style="max-height:50px; filter: brightness(0) invert(1);" class="mb-3">
+            <p class="small mb-0">
+              Station TRADEX ,Bonamoussadi<br>
+              B.P. 5963 Douala, Cameroun
+            </p>
+          </div>
+          <div class="col-lg-2 col-md-4">
+            <h6 class="mb-3">Navigation</h6>
+            <ul class="list-unstyled small">
+              <li class="mb-2"><a href="#produits">Nos garanties</a></li>
+              <li class="mb-2"><a href="#parcours">Comment ça marche</a></li>
+              <li class="mb-2"><a href="#groupe">Qui sommes-nous ?</a></li>
+            </ul>
+          </div>
+          <div class="col-lg-2 col-md-4">
+            <h6 class="mb-3">Espace</h6>
+            <ul class="list-unstyled small">
+              <li class="mb-2"><a href="/login">Connexion</a></li>
+              <li class="mb-2"><a href="/register">Créer un compte</a></li>
+              <li class="mb-2"><a href="/login">Demande de contrat</a></li>
+            </ul>
+          </div>
+          <div class="col-lg-4 col-md-4">
+            <h6 class="mb-3">Contact</h6>
+            <ul class="list-unstyled small">
+              <li class="mb-2"><i class="fa-solid fa-phone me-2"></i>(237) 233.43.73.26</li>
+              <li class="mb-2"><i class="fa-solid fa-envelope me-2"></i>proassur@proassur.cm</li>
+            </ul>
+          </div>
+        </div>
+        <hr style="border-color: rgba(255,255,255,0.1);">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small pt-2 gap-2">
+          <span>© 2026 PROASSUR SA — Société régie par le code CIMA, filiale du Groupe Wafa Assurance.</span>
+          <div class="d-flex gap-3">
+            <a href="#"><i class="fa-brands fa-facebook"></i></a>
+            <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/bootstrap-js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

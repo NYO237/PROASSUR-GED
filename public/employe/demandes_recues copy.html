@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProAssur - Espace Employé</title>
+    <link rel="stylesheet" href="/bootstrap-css/bootstrap.min.css">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="/css/css/all.min.css">
+    <script src="/js/auth-guard.js"></script>
+    <!-- <style>
+        body {
+            background-color: #f8fafc; /* Fond de page gris très clair moderne */
+        }
+        
+        /* --- STRUCTURE DU DASHBOARD (MOBILE FIRST) --- */
+        
+        /* La Sidebar sur Mobile */
+        .sidebar {
+            background-color: #ffffff;
+            width: 100%;
+            z-index: 1030;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .sidebar-brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+        /* Zone de contenu à droite */
+        .main-content {
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        .sidebar .sidebar-brand img{
+                max-height: 50px;
+            }
+                
+            
+
+        /* 💻 Ajustements pour les Écrans PC (A partir de 768px) */
+        @media (min-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 260px; /* Largeur fixe parfaite */
+                height: 100vh;
+                border-bottom: none;
+                border-right: 1px solid #e2e8f0;
+                box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+                display: flex !important;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            .sidebar-brand {
+                justify-content: center;
+                padding: 2rem 1rem;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .sidebar-menu {
+                display: flex !important; /* Force le menu à rester affiché sur PC */
+                flex-direction: column;
+                justify-content: space-between;
+                flex-grow: 1;
+            }
+            .main-content {
+                margin-left: 260px; /* Décale le contenu pour laisser la place au menu */
+                width: calc(100% - 260px);
+                padding: 2.5rem;
+            }
+
+            
+        }
+
+        /* --- STYLES DES COMPOSANTS --- */
+        
+        /* Liens du menu */
+        .sidebar .nav-link {
+            color: #64748b; /* Couleur douce slate */
+            font-weight: 500;
+            padding: 0.7rem 1rem;
+            margin: 0.2rem 1rem;
+            transition: all 0.2s ease;
+            display: flex; /* CORRIGÉ : flex au lieu de d-flex */
+            align-items: center;
+        }
+        /* Alignement vertical et espacement des icônes */
+        .sidebar .nav-link i {
+            font-size: 1.1rem;
+            width: 24px; 
+        }
+        /* Effet au survol */
+        .sidebar .nav-link:hover {
+            color: #cb46e5; /* Devient magenta */
+            background-color: #f1f5f9; 
+        }
+        /* État actif - Adapté à la charte violette de l'employé */
+        .sidebar .nav-link.active {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #cb46e5 0%, #9606d4 100%);
+            box-shadow: 0 4px 12px rgba(203, 70, 229, 0.25);
+        }
+        
+
+        /* Cartes de statistiques */
+        .stat-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Zone de dépôt pour le scanner */
+        .scan-drop-zone {
+            background-color: #ffffff;
+            border: 2px dashed #cbd5e1 !important;
+            transition: all 0.2s ease;
+        }
+        .scan-drop-zone:hover {
+            border-color: #cb46e5 !important;
+            background-color: #fafafa;
+        }
+    </style> -->
+
+    <style>
+        body {
+            background-color: #f8fafc; /* Fond de page gris très clair moderne */
+        }
+        
+        /* --- STRUCTURE DU DASHBOARD (MOBILE FIRST) --- */
+        
+        /* La Sidebar sur Mobile */
+        .sidebar {
+            background-color: #ffffff;
+            width: 100%;
+            z-index: 1030;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .sidebar-brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+        
+        /* 📱 Taille du logo sur Mobile et Tablette */
+        .sidebar-brand img {
+            max-height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Zone de contenu à droite */
+        .main-content {
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        /* 💻 Ajustements pour les Écrans PC (À partir de 768px) */
+        @media (min-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 260px; /* Largeur fixe parfaite */
+                height: 100vh;
+                border-bottom: none;
+                border-right: 1px solid #e2e8f0;
+                box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+                display: flex !important;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            .sidebar-brand {
+                justify-content: center;
+                padding: 2rem 1rem;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            
+            /* 💻 Taille du logo sur Grand Écran (PC) */
+            .sidebar-brand img {
+                max-height: 150px; 
+                width: 100%;
+                object-fit: contain;
+            }
+
+            .sidebar-menu {
+                display: flex !important; /* Force le menu à rester affiché sur PC */
+                flex-direction: column;
+                justify-content: space-between;
+                flex-grow: 1;
+            }
+            .main-content {
+                margin-left: 260px; /* Décale le contenu pour laisser la place au menu */
+                width: calc(100% - 260px);
+                padding: 2.5rem;
+            }
+        }
+
+        /* --- STYLES DES COMPOSANTS --- */
+        
+        /* Liens du menu */
+        .sidebar .nav-link {
+            color: #64748b; /* Couleur douce slate */
+            font-weight: 500;
+            padding: 0.7rem 1rem;
+            margin: 0.2rem 1rem;
+            transition: all 0.2s ease;
+            display: flex; 
+            align-items: center;
+        }
+        /* Alignement vertical et espacement des icônes */
+        .sidebar .nav-link i {
+            font-size: 1.1rem;
+            width: 24px; 
+        }
+        /* Effet au survol */
+        .sidebar .nav-link:hover {
+            color: #cb46e5; /* Devient magenta */
+            background-color: #f1f5f9; 
+        }
+        /* État actif - Adapté à la charte violette de l'employé */
+        .sidebar .nav-link.active {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #cb46e5 0%, #9606d4 100%);
+            box-shadow: 0 4px 12px rgba(203, 70, 229, 0.25);
+        }
+        
+        /* Cartes de statistiques */
+        .stat-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Zone de dépôt pour le scanner */
+        .scan-drop-zone {
+            background-color: #ffffff;
+            border: 2px dashed #cbd5e1 !important;
+            transition: all 0.2s ease;
+        }
+        .scan-drop-zone:hover {
+            border-color: #cb46e5 !important;
+            background-color: #fafafa;
+        }
+    </style>
+
+</head>
+<body>
+
+    <!-- Conteneur global en Flexbox adaptatif -->
+    <div class="d-flex flex-column flex-md-row">
+        
+        <!-- BARRE LATERALE (SIDEBAR) -->
+        <nav class="sidebar">
+            
+            <!-- En-tête : Logo + Bouton Hamburger (Visible uniquement sur mobile) -->
+            <div class="sidebar-brand bg-white">
+                <img src="ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid">
+                
+                <button class="btn border d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- Menu de navigation (id="menu" conservé pour tes scripts JS) -->
+            <div class="collapse sidebar-menu" id="menu">
+                <ul class="nav flex-column mt-3">
+                    <li class="nav-item">
+                        <a href="/demandes_recues" class="nav-link rounded active" data-target="tab-demandes-recues">
+                            <i class="fa-solid fa-home me-2"></i> Demandes reçues
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/scanner_dossier" class="nav-link rounded" data-target="tab-scanner-dossier">
+                            <i class="fa-solid fa-folder-open me-2"></i> Scanner un dossier
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/etat_production" class="nav-link rounded" data-target="tab-etat-production">
+                            <i class="fa-solid fa-book me-2"></i> État de production
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/etat_recettes" class="nav-link rounded" data-target="tab-etat-recettes">
+                            <i class="fa-solid fa-dollar me-2"></i> État des recettes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/statistiques" class="nav-link rounded" data-target="tab-statistiques">
+                            <i class="fa-solid fa-chart-line me-2"></i> Statistiques
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="/utilisateurs" class="nav-link rounded" data-target="tab-utilisateurs">
+                            <i class="fa-solid fa-user-tie me-2"></i> Utilisateurs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/profil_proassur" class="nav-link rounded" data-target="tab-profil">
+                            <i class="fa-solid fa-user me-2"></i> Mon profil
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Zone de déconnexion toujours calée en bas de la sidebar -->
+                <div class="p-3 border-top bg-white">
+                    <button class="btn btn-outline-danger w-100 fw-semibold rounded-3 py-2" onclick="localStorage.removeItem('token'); sessionStorage.clear(); window.location.href = '/login';">
+                        <i class="fa-solid fa-right-from-bracket me-2"></i> Déconnexion
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- CONTENU PRINCIPAL -->
+        <main class="main-content">
+
+            <!-- TITRE : TABLEAU DE BORD -->
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                <div class="text-start">
+                    <h2 class="text-black fw-bold mb-1">Tableau de bord</h2>
+                    <p class="text-secondary mb-0">Ravi de vous revoir, <strong>M. Owen</strong> !</p>
+                </div>
+                <span class="badge rounded-3 fs-6 p-2.5 shadow-sm" style="color: #ffffff !important; background: linear-gradient(135deg, #cb46e5 0%, #9606d4 100%);">
+                    Statut : Employé
+                </span>
+            </div>
+
+            <!-- ONGLET 1 : DEMANDES REÇUES (id corrigé pour matcher le data-target de base) -->
+            <div id="tab-demandes-recues" class="tab-content-section">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    <h5 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-list text-primary me-2"></i>Demandes</h5>
+
+                    <div class="container-fluid mt-5 mb-3">
+                        <button class="btn btn-outline-warning m-2 shadow fw-bold px-5" id="demandes_en_attente_bouton">En attente</button>
+                        <button class="btn btn-outline-primary m-2 shadow fw-bold px-5" id="demandes_valides_bouton">Valides</button>
+                        <button class="btn btn-outline-danger m-2 shadow fw-bold px-5" id="demandes_rejetes_bouton">Rejetées</button>
+                        
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">ID Demande</th>
+                                    <th scope="col">Nom Client</th>
+                                    <th scope="col">Prénom Client</th>
+                                    <th scope="col">Pieces jointes</th>
+                                    <th scope="col">Date émission</th>
+                                    <th scope="col">Heure</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="liste-demandes">
+                                <tr>
+                                    <td class="fw-bold">PA-000000001</td>
+                                    <td>NGAMBOU</td>
+                                    <td>Owen</td>
+                                    <td>
+                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> CNI</a>
+                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> Carte Grise</a>
+                                    </td>
+                                    <td>12-07-2026</td>
+                                    <td>9:47</td>
+                                    <td>
+                                        <button class="btn btn-primary fw-semibold m-1">Prendre en charge</button>
+                                        <button class="btn btn-danger fw-semibold m-1">Rejeter</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">PA-000000002</td>
+                                    <td>MPOZE</td>
+                                    <td>Ada</td>
+                                    <td>
+                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> CNI</a>
+                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> Carte Grise</a>
+                                    </td>
+                                    <td>16-04-2026</td>
+                                    <td>8:22</td>
+                                    <td class="">
+                                        <button class="btn btn-primary fw-semibold m-1 ">Prendre en charge</button>
+                                        <button class="btn btn-danger fw-semibold m-1">Rejeter</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            
+            
+              
+              
+
+            <!--  -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </main>
+    </div>
+
+    <script src="/bootstrap-js/bootstrap.bundle.min.js"></script>
+    <script src="/js/employe/employe-dash-demandes-recues.js"></script>
+</body>
+</html>

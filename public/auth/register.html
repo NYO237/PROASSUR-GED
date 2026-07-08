@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProAssur - Inscription</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bleu-primary: #0f2c59;
+            --bleu-secondary: #1746a2;
+            --rouge-accent: #d72323;
+            --text-dark: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+            background: linear-gradient(135deg, rgba(15, 44, 89, 0.3) 0%, rgba(23, 70, 162, 0.6) 100%), 
+                    url('/ProAssur_Photo.jpeg') no-repeat center center;
+            background-size: cover !important;
+        }
+
+        .auth-card {
+            background: #ffffff;
+            border: none;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background-color: var(--bleu-secondary);
+        }
+
+        .logo-container img {
+            max-width: 160px;
+            margin-bottom: 1rem;
+        }
+
+        h2.auth-title {
+            font-weight: 800;
+            color: var(--bleu-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--bleu-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        /* Styling des inputs simples pour alléger le visuel du formulaire long */
+        .form-control, .form-select {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-size: 0.95rem;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #fff;
+            border-color: var(--rouge-accent);
+            box-shadow: 0 0 0 0.25rem rgba(215, 35, 35, 0.1);
+        }
+
+        .btn-rouge {
+            background-color: var(--rouge-accent);
+            color: white;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        .btn-rouge:hover {
+            background-color: #b51c1c;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(215, 35, 35, 0.3);
+        }
+
+        .auth-link {
+            color: var(--bleu-secondary);
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .auth-link:hover {
+            color: var(--rouge-accent);
+        }
+
+        .alert-danger {
+            font-size: 0.8rem;
+            padding: 0.4rem;
+            margin-top: 0.25rem;
+            border-radius: 6px;
+            background-color: #fff1f2;
+            border-color: #ffe4e6;
+            color: #e11d48;
+        }
+    </style>
+</head>
+<body class="min-vh-100 d-flex justify-content-center align-items-center">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                
+                <div class="auth-card">
+                    <div class="text-center logo-container">
+                        <img src="/ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid border-bottom pb-2">
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <h2 class="auth-title">Créer un compte</h2>
+                        <p class="text-secondary small">Rejoignez-nous pour gérer vos assurances facilement.</p>
+                    </div>
+
+                    <div id="serveur_alert_inscription_container" style="display: none;" class="mb-3">
+                        <div id="serveur_alert_inscription" class="alert alert-danger text-center fw-bold mb-0"></div>
+                    </div>
+
+                    <form action="" class="row g-3" id="formulaire_inscription">
+                        
+                        <!-- Ligne 1 : Nom / Prénom -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="nom_inscription">Nom</label>
+                            <input class="form-control" type="text" name="nom" id="nom_inscription" placeholder="ex: NDOGMO">
+                            <div class="alert alert-danger d-none" id="nom_alert_inscription"></div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label" for="prenom_inscription">Prénom</label>
+                            <input class="form-control" type="text" name="prenom" id="prenom_inscription" placeholder="ex: Olivier">
+                            <div class="alert alert-danger d-none" id="prenom_alert_inscription"></div>
+                        </div>
+                        
+                        <!-- Ligne 2 : Email / Tel -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="identifiant_inscription">Email (Identifiant)</label>
+                            <input class="form-control" type="email" name="identifiant" id="identifiant_inscription" placeholder="exemple@gmail.com">
+                            <div class="alert alert-danger d-none" id="identifiant_alert_inscription"></div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label" for="tel_inscription">Téléphone <span class="text-secondary fw-normal">(WhatsApp)</span></label>
+                            <input class="form-control" type="tel" name="tel" id="tel_inscription" placeholder="6 XX XX XX XX">
+                            <div class="alert alert-danger d-none" id="tel_alert_inscription"></div>
+                        </div>
+                        
+                        <!-- Ligne 3 : Adresse / Sexe -->
+                        <div class="col-md-8">
+                            <label class="form-label" for="adresse_inscription">Adresse</label>
+                            <input class="form-control" type="text" name="adresse" id="adresse_inscription" placeholder="Quartier, Ville">
+                            <div class="alert alert-danger d-none" id="adresse_alert_inscription"></div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="sexe_inscription">Sexe</label>
+                            <select class="form-select" id="sexe_inscription" name="sexe">
+                                <option value="" selected disabled>Choisir...</option>
+                                <option value="M">Masculin</option>
+                                <option value="F">Féminin</option>
+                            </select>
+                            <div class="alert alert-danger d-none" id="sexe_alert_inscription"></div>
+                        </div>
+
+                        <!-- Ligne 4 : Mot de passe -->
+                        <div class="col-12 mt-4">
+                            <label class="form-label" for="mdp_inscription">Mot de passe</label>
+                            <input class="form-control" type="password" name="mdp" id="mdp_inscription" placeholder="Créez un mot de passe sécurisé">
+                            <div class="alert alert-danger d-none" id="mdp_alert_inscription"></div>
+                            <div class="form-text small text-secondary"><i class="fa-solid fa-circle-info me-1"></i> Utilisez au moins 8 caractères.</div>
+                        </div>
+                        
+                        <!-- Bouton -->
+                        <div class="col-12 d-grid gap-2 mt-4">
+                            <button type="button" class="btn btn-rouge btn-lg" id="inscription_btn">
+                                Valider l'inscription
+                            </button>
+                        </div>
+
+                        <!-- Lien retour connexion -->
+                        <div class="col-12 text-center mt-3">
+                            <p class="text-secondary small mb-0">Vous avez déjà un compte ?</p>
+                            <a href="/login" class="auth-link" id="inscription_link">Retour à la connexion</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script original conservé -->
+    <script src="../js/auth-register.js"></script>
+</body>
+</html>

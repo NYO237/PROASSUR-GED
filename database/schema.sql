@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS utilisateurs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(100) NOT NULL,
+  prenom VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  tel VARCHAR(9) NOT NULL,
+  mot_de_passe VARCHAR(255) NOT NULL,
+  adresse VARCHAR(255) NOT NULL,
+  sexe ENUM('M', 'F') NOT NULL,
+  role ENUM('client', 'employe') NOT NULL DEFAULT 'client',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProAssur - Espace Employé</title>
+    
+    <!-- CSS Bootstrap & FontAwesome -->
+    <link rel="stylesheet" href="/bootstrap-css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/css/all.min.css">
+    <!-- Police Inter pour la cohérence avec le reste du site -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="/js/auth-guard.js"></script>
+    
+    <style>
+        :root {
+            /* Palette ProAssur Refondue */
+            --bleu-primary: #0f2c59;   /* Bleu dominant (Barre latérale) */
+            --bleu-secondary: #1746a2; /* Bleu d'interaction */
+            --rouge-accent: #d72323;   /* Rouge dynamique (15%) */
+            --bg-light: #f4f7f6;       /* Fond de la zone de contenu */
+            --text-dark: #1e293b;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* --- STRUCTURE DU DASHBOARD --- */
+        
+        /* La Sidebar */
+        .sidebar {
+            background-color: var(--bleu-primary);
+            width: 100%;
+            z-index: 1030;
+        }
+        .sidebar-brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: rgba(0,0,0,0.1); /* Légèrement plus sombre que la sidebar */
+        }
+        
+        /* Logo passé en blanc via CSS pour contraster sur le bleu foncé */
+        .sidebar-brand img {
+            max-height: 45px;
+            width: auto;
+            object-fit: contain;
+            filter: brightness(0) invert(1); 
+        }
+
+        .main-content {
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        /* Responsive : Écrans PC (À partir de 768px) */
+        @media (min-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 260px;
+                height: 100vh;
+                display: flex !important;
+                flex-direction: column;
+                justify-content: space-between;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            }
+            .sidebar-brand {
+                justify-content: center;
+                padding: 2rem 1rem;
+            }
+            .sidebar-brand img {
+                max-height: 190px; 
+                width: 100%;
+            }
+            .sidebar-menu {
+                display: flex !important;
+                flex-direction: column;
+                justify-content: space-between;
+                flex-grow: 1;
+                padding-top: 1rem;
+            }
+            .main-content {
+                margin-left: 260px;
+                width: calc(100% - 260px);
+                padding: 2.5rem 3rem;
+            }
+        }
+
+        /* --- STYLES DES LIENS DE LA SIDEBAR --- */
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            padding: 0.8rem 1.2rem;
+            margin: 0.3rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex; 
+            align-items: center;
+        }
+        .sidebar .nav-link i {
+            font-size: 1.1rem;
+            width: 28px; 
+        }
+        .sidebar .nav-link:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.1); 
+            transform: translateX(4px);
+        }
+        /* Lien Actif : Fond bleu clair + Liseré rouge */
+        .sidebar .nav-link.active {
+            color: #ffffff !important;
+            background-color: var(--bleu-secondary);
+            border-left: 4px solid var(--rouge-accent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Bouton Menu Mobile */
+        .btn-mobile-menu {
+            color: white;
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        /* Zone de déconnexion */
+        .logout-zone {
+            background-color: rgba(0,0,0,0.15);
+            padding: 1.5rem;
+        }
+        .btn-logout {
+            background-color: transparent;
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.5);
+        }
+        .btn-logout:hover {
+            background-color: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        /* --- CONTENU PRINCIPAL --- */
+        .dashboard-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .badge-statut {
+            background-color: var(--rouge-accent);
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(215, 35, 35, 0.25);
+        }
+
+        .dashboard-card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            background: #ffffff;
+        }
+
+        /* --- BOUTONS D'ÉTAT (Filtres) --- */
+        .btn-status {
+            border-radius: 30px; /* Style "Pillule" moderne */
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .btn-status:hover {
+            transform: translateY(-2px);
+        }
+        .btn-status.active {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* Couleurs sémantiques adaptées au design moderne */
+        .btn-status-warning {
+            color: #b45309; 
+            background-color: #fef3c7; 
+        }
+        .btn-status-warning:hover, .btn-status-warning.active {
+            background-color: #fde68a; 
+            border-color: #fbbf24;
+        }
+
+        .btn-status-success {
+            color: #047857; 
+            background-color: #d1fae5; 
+        }
+        .btn-status-success:hover, .btn-status-success.active {
+            background-color: #a7f3d0; 
+            border-color: #34d399;
+        }
+
+        .btn-status-danger {
+            color: #be123c; 
+            background-color: #ffe4e6; 
+        }
+        .btn-status-danger:hover, .btn-status-danger.active {
+            background-color: #fecdd3; 
+            border-color: #fb7185;
+        }
+
+        /* --- BARRE DE RECHERCHE --- */
+        .search-wrapper .input-group-text {
+            background-color: #f8fafc;
+            border-color: #e2e8f0;
+            color: var(--bleu-secondary);
+        }
+        .search-wrapper .form-control {
+            background-color: #f8fafc;
+            border-color: #e2e8f0;
+            box-shadow: none;
+        }
+        .search-wrapper .form-control:focus {
+            border-color: var(--bleu-secondary);
+            background-color: #ffffff;
+        }
+        .search-wrapper:focus-within .input-group-text {
+            border-color: var(--bleu-secondary);
+            background-color: #ffffff;
+        }
+
+        /* --- TABLEAU --- */
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden; /* Garde les coins arrondis pour le header du tableau */
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table thead {
+            background-color: #f1f5f9;
+        }
+        .table thead th {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: none;
+            padding: 1rem;
+        }
+        .table tbody td {
+            padding: 1rem;
+            color: var(--text-dark);
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="d-flex flex-column flex-md-row">
+        
+        <!-- BARRE LATERALE (SIDEBAR) -->
+        <nav class="sidebar">
+            
+            <div class="sidebar-brand">
+                <img src="ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid">
+                
+                <button class="btn btn-mobile-menu d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- id="menu" conservé -->
+            <div class="collapse sidebar-menu" id="menu">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="/demandes_recues" class="nav-link active" data-target="tab-demandes-recues">
+                            <i class="fa-solid fa-inbox me-2"></i> Demandes reçues
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/notifications" class="nav-link d-flex justify-content-between align-items-center" data-target="tab-notifications">
+                            <span><i class="fa-solid fa-bell me-2"></i> Notifications</span>
+                            <span class="badge rounded-pill bg-danger notif-badge d-none">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/scanner_dossier" class="nav-link" data-target="tab-scanner-dossier">
+                            <i class="fa-solid fa-file-signature me-2"></i> Scanner un dossier
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/etat_production" class="nav-link" data-target="tab-etat-production">
+                            <i class="fa-solid fa-briefcase me-2"></i> État de production
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/contrats" class="nav-link" data-target="tab-contrats">
+                            <i class="fa-solid fa-file-contract me-2"></i> Contrats
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/etat_recettes" class="nav-link" data-target="tab-etat-recettes">
+                            <i class="fa-solid fa-cash-register me-2"></i> Rapport de caisse
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/statistiques" class="nav-link" data-target="tab-statistiques">
+                            <i class="fa-solid fa-chart-pie me-2"></i> Statistiques
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item mt-4 chef-agence-only">
+                        <a href="/utilisateurs" class="nav-link" data-target="tab-utilisateurs">
+                            <i class="fa-solid fa-users-gear me-2"></i> Utilisateurs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/profil_proassur" class="nav-link" data-target="tab-profil">
+                            <i class="fa-solid fa-user-shield me-2"></i> Mon profil
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="logout-zone border-top border-secondary">
+                    <button class="btn btn-logout w-100 fw-semibold rounded-3 py-2" onclick="localStorage.removeItem('token'); sessionStorage.clear(); window.location.href = '/';">
+                        <i class="fa-solid fa-power-off me-2"></i> Déconnexion
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- CONTENU PRINCIPAL -->
+        <main class="main-content">
+
+            <!-- TITRE -->
+            <div class="dashboard-header d-flex justify-content-between align-items-center">
+                <div class="text-start">
+                    <h2 class="fw-bold mb-1" style="color: var(--bleu-primary);">Tableau de bord</h2>
+                    <p class="text-secondary mb-0" id="message-bienvenue">Ravi de vous revoir, <strong>M. Owen</strong> !</p>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/notifications" class="position-relative text-decoration-none" title="Notifications">
+                        <i class="fa-solid fa-bell fs-4" style="color: var(--bleu-primary);"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notif-badge d-none" style="font-size:0.65rem;">0</span>
+                    </a>
+                    <span class="badge badge-statut rounded-pill fs-6 px-3 py-2" id="badge-statut-utilisateur">
+                        Employé
+                    </span>
+                </div>
+            </div>
+
+            <!-- ONGLET 1 : DEMANDES REÇUES (id conservé) -->
+            <div id="tab-demandes-recues" class="tab-content-section">
+                <div class="dashboard-card p-4">
+                    
+                    <!-- En-tête de la carte & Recherche -->
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                        <h5 class="fw-bold mb-0" style="color: var(--bleu-primary);">
+                            <i class="fa-solid fa-list-check me-2" style="color: var(--rouge-accent);"></i>Gestion des demandes
+                        </h5>
+
+                        <!-- id="recherche-demande" conservé -->
+                        <div class="input-group search-wrapper" style="max-width: 350px;">
+                            <span class="input-group-text border-end-0">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input
+                                type="text"
+                                id="recherche-demande"
+                                class="form-control border-start-0 ps-0"
+                                placeholder="Rechercher par nom..."
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Boutons de filtres (IDs conservés) -->
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <button class="btn btn-status active btn-status-warning" id="demandes_en_attente_bouton">
+                            <i class="fa-solid fa-hourglass-half me-2"></i>En attente
+                        </button>
+                        <button class="btn btn-status btn-status-success" id="demandes_valides_bouton">
+                            <i class="fa-solid fa-circle-check me-2"></i>Valides
+                        </button>
+                        <button class="btn btn-status btn-status-danger" id="demandes_rejetes_bouton">
+                            <i class="fa-solid fa-circle-xmark me-2"></i>Rejetées
+                        </button>
+                    </div>
+
+                    <!-- Tableau (id="liste-demandes" conservé) -->
+                    <div class="table-responsive border">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID Demande</th>
+                                    <th scope="col">Nom Client</th>
+                                    <th scope="col">Prénom Client</th>
+                                    <th scope="col">Téléphone</th>
+                                    <th scope="col">Durée</th>
+                                    <th scope="col">Pièces jointes</th>
+                                    <th scope="col">Date émission</th>
+                                    <th scope="col">Heure</th>
+                                    <th scope="col">Motif</th>
+                                    <th scope="col" class="text-center" id="colonne-actions-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="liste-demandes">
+                                <!-- Les données seront injectées ici par employe-dash-demandes-recues.js -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL : Motif de rejet d'une demande -->
+    <div class="modal fade" id="modalRejetDemande" tabindex="-1" aria-labelledby="modalRejetDemandeLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalRejetDemandeLabel">Motif du rejet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Conserve l'id de la demande concernée pendant la saisie -->
+                    <input type="hidden" id="rejet-id-demande">
+                    <label for="rejet-motif-input" class="form-label">Veuillez préciser le motif du rejet :</label>
+                    <input
+                        type="text"
+                        id="rejet-motif-input"
+                        class="form-control"
+                        placeholder="Ex : document illisible, information manquante..."
+                        maxlength="255"
+                    >
+                    <div class="invalid-feedback" id="rejet-motif-erreur">
+                        Le motif est obligatoire.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="confirmer-rejet-bouton">
+                        <i class="fa-solid fa-circle-xmark me-2"></i>Confirmer le rejet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/bootstrap-js/bootstrap.bundle.min.js"></script>
+    <script src="/js/employe/employe-dash-demandes-recues.js"></script>
+    <script src="/js/employe/notifications-badge.js"></script>
+    <script src="/js/auth-guard.js"></script>
+</body>
+</html>
