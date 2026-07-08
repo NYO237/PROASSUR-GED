@@ -1,5 +1,5 @@
 // services/productionService.js
-const pool = require('../config/db');
+const pool = require("../config/db");
 
 /**
  * Récupère tous les contrats dont la date d'émission (mentionnée sur le contrat)
@@ -29,7 +29,7 @@ async function getProductionParSemaine(dateDebut, dateFin) {
      LEFT JOIN prime p        ON p.id_document = c.id_document
      WHERE c.date_emission BETWEEN ? AND ?
      ORDER BY c.date_emission ASC`,
-    [dateDebut, dateFin]
+    [dateDebut, dateFin],
   );
 
   return rows;
