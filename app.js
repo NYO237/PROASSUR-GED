@@ -130,3 +130,28 @@ app.listen(process.env.PORT||3000, process.env.HOST||"localhost", () => {
     console.log(`Serveur démarré sur ${process.env.HOST}:${process.env.PORT}`);
     console.log(`Serveur démarré sur http://${process.env.HOST}:${process.env.PORT}`);
 });
+
+
+// 
+
+app.get('/api/debug/db-check', async (req, res) => {
+  try {
+    const pool = require('./config/db');
+    const [rows] = await pool.query('SELECT 1 AS ok');
+    res.json({ db: 'ok', rows });
+  } catch (e) {
+    res.json({ db: 'error', message: e.message, code: e.code });
+  }
+});
+
+app.get('/api/debug/env-check', (req, res) => {
+  const key = process.env.JWT_PRIVATE_KEY || '';
+  res.json({
+    dbPublicUrlSet: !!process.env.DB_PUBLIC_URL,
+    dbHostSet: !!process.env.DB_HOST,
+    jwtKeySet: !!process.env.JWT_PRIVATE_KEY,
+    jwtKeyLength: key.length,
+    jwtKeyLooksLikePEM: key.includes('PRIVATE KEY'),
+    jwtKeyHasRealNewlines: key.includes('\n'),
+  });
+});

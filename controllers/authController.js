@@ -114,18 +114,13 @@ async function login(req, res) {
 
   } catch (error) {
 
-    console.error('ERREUR LOGIN >>>', {
-    message: error.message,
-    code: error.code,      // ex: ER_ACCESS_DENIED_ERROR, ECONNREFUSED, ENOTFOUND...
-    stack: error.stack,
+  console.error('ERREUR LOGIN >>>', { message: error.message, code: error.code, stack: error.stack });
+  return res.status(500).json({
+    success: false,
+    message: 'Une erreur serveur est survenue.',
+    debug: { message: error.message, code: error.code } // ⚠️ à retirer après debug
   });
-
-    console.error('Erreur connexion serveur :', error.message);
-    return res.status(500).json({
-      success: false,
-      message: 'Une erreur serveur est survenue.',
-    });
-  }
+}
 }
 
 module.exports = {
