@@ -113,6 +113,13 @@ async function login(req, res) {
     });
 
   } catch (error) {
+
+    console.error('ERREUR LOGIN >>>', {
+    message: error.message,
+    code: error.code,      // ex: ER_ACCESS_DENIED_ERROR, ECONNREFUSED, ENOTFOUND...
+    stack: error.stack,
+  });
+
     console.error('Erreur connexion serveur :', error.message);
     return res.status(500).json({
       success: false,
