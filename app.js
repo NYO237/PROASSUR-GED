@@ -126,7 +126,7 @@ app.get('/mes_notifications',(req,res)=>{
 //     console.log(`Serveur démarré sur ${process.env.HOST}:${process.env.PORT}`);
 // });
 
-app.listen(process.env.PORT, process.env.HOST, () => {
+app.listen(process.env.PORT||3000, process.env.HOST||"localhost", () => {
     console.log(`Serveur démarré sur ${process.env.HOST}:${process.env.PORT}`);
     console.log(`Serveur démarré sur http://${process.env.HOST}:${process.env.PORT}`);
 });
