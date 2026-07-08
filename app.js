@@ -98,7 +98,7 @@ app.get('/etat_recettes', (req, res) => {
 
 // SECTION CLIENT 
 
-app.use('/api/contrats', require('./routes/Contratclientroutes'));
+app.use('/api/contrats', require('./routes/contratclientroutes'));
 
 app.get('/accueil',(req,res)=>{
     res.sendFile('./public/client/accueil.html',{root : __dirname})

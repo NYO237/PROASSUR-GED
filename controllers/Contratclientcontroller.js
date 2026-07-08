@@ -1,6 +1,6 @@
 // controllers/contratClientController.js
 const pool = require('../config/db');
-const contratClientService = require('../services/contratClientService');
+const contratClientService = require('../services/ContratClientService');
 
 function formaterContrat(row) {
   return {

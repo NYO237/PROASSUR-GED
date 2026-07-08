@@ -1,5 +1,5 @@
 // controllers/statistiquesController.js
-const statistiquesService = require('../services/statistiquesService');
+const statistiquesService = require('../services/StatistiquesService');
 
 // GET /api/statistiques/synthese?periode=jour|semaine|mois|tout
 async function getSynthese(req, res) {

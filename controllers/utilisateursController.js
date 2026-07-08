@@ -1,4 +1,4 @@
-const utilisateursService = require('../services/utilisateursService');
+const utilisateursService = require('../services/UtilisateursService');
 
 async function afficher_infos_clients(req, res) {
     try {

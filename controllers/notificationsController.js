@@ -1,5 +1,5 @@
 // controllers/notificationsController.js
-const notificationsService = require('../services/notificationsService');
+const notificationsService = require('../services/NotificationsService');
 
 // Détermine le palier d'urgence à partir du nombre de jours restants
 function calculerPalier(joursRestants) {

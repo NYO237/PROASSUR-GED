@@ -1,6 +1,6 @@
 // controllers/productionController.js
 const ExcelJS = require('exceljs');
-const productionService = require('../services/productionService');
+const productionService = require('../services/ProductionService');
 
 // Calcule les dates lundi-dimanche à partir d'une chaîne "2026-W20" (format input type="week")
 function getDatesSemaine(semaineISO) {

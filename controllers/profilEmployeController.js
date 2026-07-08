@@ -1,4 +1,4 @@
-const profilService = require('../services/profilEmployeService');
+const profilService = require('../services/ProfilEmployeService');
 
 async function afficher_infos_employe(req, res) {
     try {

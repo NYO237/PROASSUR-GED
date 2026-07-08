@@ -1,4 +1,4 @@
-const profilService = require('../services/profilService');
+const profilService = require('../services/ProfilService');
 
 async function afficher_infos(req, res) {
     try {

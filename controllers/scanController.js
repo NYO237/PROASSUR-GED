@@ -1,7 +1,7 @@
 // controllers/scanController.js
 const pdfService = require("../services/pdfService");
-const aiService = require("../services/aiService");
-const { sauvegarderLotDocuments, recupererFichiersExistants } = require('../services/dbScanService');
+const aiService = require("../services/AiService");
+const { sauvegarderLotDocuments, recupererFichiersExistants } = require('../services/DbScanService');
 
 function parseAiJson(rawText) {
   if (typeof rawText !== "string") return rawText;

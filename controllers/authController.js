@@ -1,7 +1,7 @@
 const { validateInscription, validateLogin } = require('../utils/validators');
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
-const userService = require('../services/userService');
+const userService = require('../services/UserService');
 
 async function register(req, res) {
   try {

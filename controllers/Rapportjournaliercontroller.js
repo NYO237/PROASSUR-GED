@@ -1,7 +1,7 @@
 // controllers/rapportJournalierController.js
 const ExcelJS   = require('exceljs');
-const { analyserSituationEncaissements, analyserBordereauCommissions } = require('../services/aiRapportService');
-const rapportService = require('../services/rapportJournalierService');
+const { analyserSituationEncaissements, analyserBordereauCommissions } = require('../services/AiRapportservice');
+const rapportService = require('../services/RapportJournalierService');
 
 // ── POST /api/rapport-journalier/scan ─────────────────────────────────────────
 async function scannerRapportJournalier(req, res) {

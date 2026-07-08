@@ -1,6 +1,6 @@
 const fs = require('fs');
 const cloudinary = require('../config/cloudinary');
-const demandeService = require('../services/demandeService');
+const demandeService = require('../services/DemandeService');
 
 async function uploadToCloudinary(fichierLocal) {
   const result = await cloudinary.uploader.upload(fichierLocal.path, {

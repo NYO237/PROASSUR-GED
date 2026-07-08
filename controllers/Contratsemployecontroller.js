@@ -1,4 +1,4 @@
-const contratsEmployeService = require('../services/contratsEmployeService');
+const contratsEmployeService = require('../services/ContratsEmployeService');
 
 // GET /api/contrats-employe/rechercher?nom=...
 async function rechercherContrats(req, res) {
