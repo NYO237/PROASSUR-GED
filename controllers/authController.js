@@ -82,6 +82,9 @@ async function login(req, res) {
     // si cet employé a le droit d'accéder à la route /utilisateurs.
     const estChefAgence = !!user.est_chef_agence;
     const privateKey = process.env.JWT_PRIVATE_KEY.replace(/\\n/g, '\n');
+    console.log('DEBUG clé — longueur:', privateKey ? privateKey.length : 'UNDEFINED');
+    console.log('DEBUG clé — début:', privateKey ? JSON.stringify(privateKey.substring(0, 35)) : 'UNDEFINED');
+    console.log('DEBUG clé — fin:', privateKey ? JSON.stringify(privateKey.substring(privateKey.length - 35)) : 'UNDEFINED');
     const token = jwt.sign(
       {
         id: user.id,
