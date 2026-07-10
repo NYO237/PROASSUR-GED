@@ -217,9 +217,13 @@
         }
 
         /* --- TABLEAU --- */
-        .table-responsive {
+        .table-card-wrapper {
             border-radius: 12px;
             overflow: hidden;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* scroll fluide au doigt sur iOS */
         }
         .table {
             margin-bottom: 0;
@@ -412,43 +416,26 @@
                             <i class="fas fa-times-circle me-2"></i>Rejetées
                         </button>
                     </div>
-                    <div class="table-responsive ">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Date demande</th>
-                                    <th scope="col">Heure</th>
+                    <div class="table-card-wrapper border">
+
+                        <div class="table-responsive ">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date demande</th>
+                                        <th scope="col">Heure</th>
+                                        
+                                        <th scope="col">Documents transmis</th>
+                                        <th scope="col">Durée</th>
+                                        <th scope="col">Statut</th>
+                                        <th scope="col">Observation</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liste-demandes">
                                     
-                                    <th scope="col">Documents transmis</th>
-                                    <th scope="col">Durée</th>
-                                    <th scope="col">Statut</th>
-                                    <th scope="col">Observation</th>
-                                </tr>
-                            </thead>
-                            <tbody id="liste-demandes">
-                                <!-- <tr>
-                                    <td>12-07-2026</td>
-                                    <td>08:47</td>
-                                    <td class="fw-bold">TOYOTA HILUX</td>
-                                    <td>
-                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> CNI</a>
-                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> Carte Grise</a>
-                                    </td>
-                                    <td><span class="badge bg-success px-2.5 py-1.5 rounded-pill">Validée</span></td>
-                                    <td class="small text-muted">Dossier complet. En attente de traitement par un agent.</td>
-                                </tr>
-                                <tr>
-                                    <td>12-07-2026</td>
-                                    <td>08:47</td>
-                                    <td>
-                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> CNI</a>
-                                        <a class="btn btn-outline-secondary" href="#"><i class="fa-solid fa-paperclip me-1"></i> Carte Grise</a>
-                                    </td>
-                                    <td><span class="badge bg-success px-2.5 py-1.5 rounded-pill">Validée</span></td>
-                                    <td class="small text-muted">Dossier complet. En attente de traitement par un agent.</td>
-                                </tr> -->
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

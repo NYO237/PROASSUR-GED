@@ -220,9 +220,13 @@
         }
 
         /* --- TABLEAU --- */
-        .table-responsive {
+        .table-card-wrapper {
             border-radius: 12px;
             overflow: hidden;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* scroll fluide au doigt sur iOS */
         }
         .table {
             margin-bottom: 0;
@@ -419,25 +423,28 @@
                         </button>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Bureau</th>
-                                    <th scope="col">N° Police</th>
-                                    <th scope="col">N° Carte rose</th>
-                                    <th scope="col">Véhicule</th>
-                                    <th scope="col">Date émission</th>
-                                    <th scope="col">Date effet</th>
-                                    <th scope="col">Date échéance</th>
-                                    <th scope="col">Accessoires</th>
-                                    <th scope="col">Prime totale</th>
-                                </tr>
-                            </thead>
-                            <tbody id="liste-contrats">
-                                <!-- Rempli dynamiquement par client-dash-accueil.js -->
-                            </tbody>
-                        </table>
+                    <div class="table-card-wrapper border">
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Bureau</th>
+                                        <th scope="col">N° Police</th>
+                                        <th scope="col">N° Carte rose</th>
+                                        <th scope="col">Véhicule</th>
+                                        <th scope="col">Date émission</th>
+                                        <th scope="col">Date effet</th>
+                                        <th scope="col">Date échéance</th>
+                                        <th scope="col">Accessoires</th>
+                                        <th scope="col">Prime totale</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liste-contrats">
+                                    <!-- Rempli dynamiquement par client-dash-accueil.js -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
