@@ -195,9 +195,13 @@
         }
 
         /* --- TABLEAU --- */
-        .table-responsive {
+        .table-card-wrapper {
             border-radius: 12px;
             overflow: hidden;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* scroll fluide au doigt sur iOS */
         }
         .table {
             margin-bottom: 0;
@@ -353,28 +357,30 @@
                     </form>
 
                     <div id="alerte-contrats-container"></div>
+                    <div class="table-card-wrapper border">
 
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Bureau</th>
-                                    <th scope="col">N° Police</th>
-                                    <th scope="col">Assuré</th>
-                                    <th scope="col">Véhicule</th>
-                                    <th scope="col">Date d'émission</th>
-                                    <th scope="col">Date d'effet</th>
-                                    <th scope="col">Date d'échéance</th>
-                                    <th scope="col">Prime nette</th>
-                                    <th scope="col">Statut</th>
-                                </tr>
-                            </thead>
-                            <tbody id="liste_contrats">
-                                <tr>
-                                    <td colspan="9" class="text-center text-muted py-3">Recherchez un assuré par son nom pour afficher ses contrats.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Bureau</th>
+                                        <th scope="col">N° Police</th>
+                                        <th scope="col">Assuré</th>
+                                        <th scope="col">Véhicule</th>
+                                        <th scope="col">Date d'émission</th>
+                                        <th scope="col">Date d'effet</th>
+                                        <th scope="col">Date d'échéance</th>
+                                        <th scope="col">Prime nette</th>
+                                        <th scope="col">Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liste_contrats">
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted py-3">Recherchez un assuré par son nom pour afficher ses contrats.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

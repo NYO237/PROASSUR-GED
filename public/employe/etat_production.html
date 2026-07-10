@@ -205,9 +205,13 @@
       }
 
       /* --- TABLEAU --- */
-      .table-responsive {
+      .table-card-wrapper {
         border-radius: 12px;
         overflow: hidden;
+      }
+      .table-responsive {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch; /* scroll fluide au doigt sur iOS */
       }
       .table {
         margin-bottom: 0;
@@ -405,66 +409,29 @@
             </div>
 
             <div id="zone-donnees-production" class="mt-4 bg-white">
-              <div class="table-responsive border">
-                <table class="table table-hover align-middle mb-0">
-                  <thead>
-                    <tr>
-                      <th scope="col">Numero police</th>
-                      <th scope="col">Nom et Prenom</th>  <!-- Nom et prenom de l'assure-->
-                      <th scope="col">Date d'emission</th>
-                      <th scope="col">Date effet</th>
-                      <th scope="col">Date echeance</th>
-                      <th scope="col">Num Carte rose</th>
-                      <th scope="col">Num Attestation</th>
-                      <th scope="col">TVA</th>
-                      <th scope="col">Carte rose</th>
-                      <th scope="col">Prime totale</th>
-                      <th scope="col">Observation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- <tr>
-                      <td class="fw-bold">PA-000000001</td>
-                      <td>NGAMBOU</td>
-                      <td>Owen</td>
-                      <td>TOYOTA HILUX</td>
-                      <td>12-07-2026</td>
-                      <td>9:47</td>
-                      <td>
-                        <button
-                          class="btn btn-sm btn-outline-primary fw-semibold m-1"
-                        >
-                          Prendre en charge
-                        </button>
-                        <button
-                          class="btn btn-sm btn-outline-danger fw-semibold m-1"
-                        >
-                          Rejeter
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="fw-bold">PA-000000002</td>
-                      <td>MPOZE</td>
-                      <td>Ada</td>
-                      <td>FERRARI</td>
-                      <td>16-04-2026</td>
-                      <td>8:22</td>
-                      <td class="">
-                        <button
-                          class="btn btn-sm btn-outline-primary fw-semibold m-1"
-                        >
-                          Prendre en charge
-                        </button>
-                        <button
-                          class="btn btn-sm btn-outline-danger fw-semibold m-1"
-                        >
-                          Rejeter
-                        </button>
-                      </td>
-                    </tr> -->
-                  </tbody>
-                </table>
+              <div class="table-card-wrapper border border">
+
+                  <div class="table-responsive border">
+                    <table class="table table-hover align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th scope="col">Numero police</th>
+                          <th scope="col">Nom et Prenom</th>  <!-- Nom et prenom de l'assure-->
+                          <th scope="col">Date d'emission</th>
+                          <th scope="col">Date effet</th>
+                          <th scope="col">Date echeance</th>
+                          <th scope="col">Num Carte rose</th>
+                          <th scope="col">Num Attestation</th>
+                          <th scope="col">TVA</th>
+                          <th scope="col">Carte rose</th>
+                          <th scope="col">Prime totale</th>
+                          <th scope="col">Observation</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      </tbody>
+                    </table>
+                  </div>
               </div>
             </div>
           </div>

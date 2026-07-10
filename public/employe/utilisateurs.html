@@ -195,9 +195,13 @@
         }
 
         /* --- TABLEAU --- */
-        .table-responsive {
+        .table-card-wrapper {
             border-radius: 12px;
             overflow: hidden;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* scroll fluide au doigt sur iOS */
         }
         .table {
             margin-bottom: 0;
@@ -384,25 +388,29 @@
 
                     <div id="alerte-utilisateurs-container"></div>
 
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">Nom</th>
-                                    <th scope="col">Prénom</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Téléphone</th>
-                                    <th scope="col">Adresse</th>
-                                    <th scope="col">Statut</th>
-                                    <th scope="col">Rôle</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="liste_utilisateurs">
-                                <!-- Rempli dynamiquement par employe-dash-utilisateurs.js -->
-                            </tbody>
-                        </table>
+
+                    <div class="table-card-wrapper border">
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Nom</th>
+                                        <th scope="col">Prénom</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Téléphone</th>
+                                        <th scope="col">Adresse</th>
+                                        <th scope="col">Statut</th>
+                                        <th scope="col">Rôle</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liste_utilisateurs">
+                                    <!-- Rempli dynamiquement par employe-dash-utilisateurs.js -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

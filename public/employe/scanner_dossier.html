@@ -186,9 +186,13 @@
       }
 
       /* --- TABLEAU --- */
+      .table-card-wrapper {
+          border-radius: 12px;
+          overflow: hidden;
+      }
       .table-responsive {
-        border-radius: 12px;
-        overflow: hidden;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch; /* scroll fluide au doigt sur iOS */
       }
       .table {
         margin-bottom: 0;
@@ -473,24 +477,27 @@
             <h5 class="fw-bold mb-4" style="color: var(--bleu-primary);">
               <i class="fa-solid fa-folder-tree me-2" style="color: var(--rouge-accent);"></i>Dossiers d'Assurance Associés
             </h5>
-            <div class="table-responsive border">
-              <table class="table table-hover align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th scope="col">Bureau</th>
-                    <th scope="col">Numéro police</th>
-                    <th scope="col">Numéro carte rose</th>
-                    <th scope="col">Numéro attestation</th>
-                    <th scope="col">Nom et Prenom Client</th>
+            <div class="table-card-wrapper border">
+              <div class="table-responsive border">
+                <table class="table table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th scope="col">Bureau</th>
+                      <th scope="col">Numéro police</th>
+                      <th scope="col">Numéro carte rose</th>
+                      <th scope="col">Numéro attestation</th>
+                      <th scope="col">Nom et Prenom Client</th>
 
-                    <th scope="col">Véhicule</th>
-                    <th scope="col">Nom et Prenom conducteur</th>
-                    <!-- <th scope="col">Prénom conducteur</th> -->
-                    <th scope="col">Prime nette</th>
-                  </tr>
-                </thead>
-                <tbody id="corps-tableau-donnees"></tbody>
-              </table>
+                      <th scope="col">Véhicule</th>
+                      <th scope="col">Nom et Prenom conducteur</th>
+                      <!-- <th scope="col">Prénom conducteur</th> -->
+                      <th scope="col">Prime nette</th>
+                    </tr>
+                  </thead>
+                  <tbody id="corps-tableau-donnees"></tbody>
+                </table>
+              </div>
+
             </div>
           </div>
         </div>

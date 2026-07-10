@@ -231,9 +231,13 @@
         }
 
         /* --- TABLEAU --- */
-        .table-responsive {
+        .table-card-wrapper {
             border-radius: 12px;
             overflow: hidden; /* Garde les coins arrondis pour le header du tableau */
+        }
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* scroll fluide au doigt sur iOS */
         }
         .table {
             margin-bottom: 0;
@@ -395,26 +399,28 @@
                     </div>
 
                     <!-- Tableau (id="liste-demandes" conservé) -->
-                    <div class="table-responsive border">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">ID Demande</th>
-                                    <th scope="col">Nom Client</th>
-                                    <th scope="col">Prénom Client</th>
-                                    <th scope="col">Téléphone</th>
-                                    <th scope="col">Durée</th>
-                                    <th scope="col">Pièces jointes</th>
-                                    <th scope="col">Date émission</th>
-                                    <th scope="col">Heure</th>
-                                    <th scope="col">Motif</th>
-                                    <th scope="col" class="text-center" id="colonne-actions-header">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="liste-demandes">
-                                <!-- Les données seront injectées ici par employe-dash-demandes-recues.js -->
-                            </tbody>
-                        </table>
+                    <div class="table-card-wrapper border">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">ID Demande</th>
+                                        <th scope="col">Nom Client</th>
+                                        <th scope="col">Prénom Client</th>
+                                        <th scope="col">Téléphone</th>
+                                        <th scope="col">Durée</th>
+                                        <th scope="col">Pièces jointes</th>
+                                        <th scope="col">Date émission</th>
+                                        <th scope="col">Heure</th>
+                                        <th scope="col">Motif</th>
+                                        <th scope="col" class="text-center" id="colonne-actions-header">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liste-demandes">
+                                    <!-- Les données seront injectées ici par employe-dash-demandes-recues.js -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                 </div>
