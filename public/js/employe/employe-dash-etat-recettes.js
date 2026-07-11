@@ -118,36 +118,38 @@ function afficherRapport(r) {
       <h6 class="fw-semibold text-secondary mb-2 mt-2">
         <i class="fa-solid fa-chart-bar me-1"></i>Activités de la journée
       </h6>
-      <div class="table-responsive mb-4">
-        <table class="table table-bordered table-sm align-middle small">
-          <thead class="table-light">
-            <tr>
-              <th style="width:55%"></th>
-              <th class="text-center">PRODUCTIONS</th>
-              <th class="text-center">ENCAISSEMENTS</th>
-              <th class="text-center">ÉCART</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>EMISSIONS HORS POOL TPV</td>
-              ${td(surEmission)} ${td(surEmission)} ${td(0)}
-            </tr>
-            <tr><td>EMISSIONS POOL TPV</td>${td(0)}${td(0)}${td(0)}</tr>
-            <tr><td>COURTAGE</td>${td(0)}${td(0)}${td(0)}</tr>
-            <tr><td>DEPOT CLIENTS</td>${td(0)}${td(0)}${td(0)}</tr>
-            <tr><td>RECOUVREMENT</td>${td(0)}${td(0)}${td(0)}</tr>
-            <tr class="table-secondary fw-bold">
-              <td>TOTAL</td>${td(surEmission,'fw-bold')}${td(surEmission,'fw-bold')}${td(0,'fw-bold')}
-            </tr>
-          </tbody>
-        </table>
+      <div class="table-card-wrapper border">
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered table-sm align-middle small">
+            <thead class="table-light">
+              <tr>
+                <th style="width:55%"></th>
+                <th class="text-center">PRODUCTIONS</th>
+                <th class="text-center">ENCAISSEMENTS</th>
+                <th class="text-center">ÉCART</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>EMISSIONS HORS POOL TPV</td>
+                ${td(surEmission)} ${td(surEmission)} ${td(0)}
+              </tr>
+              <tr><td>EMISSIONS POOL TPV</td>${td(0)}${td(0)}${td(0)}</tr>
+              <tr><td>COURTAGE</td>${td(0)}${td(0)}${td(0)}</tr>
+              <tr><td>DEPOT CLIENTS</td>${td(0)}${td(0)}${td(0)}</tr>
+              <tr><td>RECOUVREMENT</td>${td(0)}${td(0)}${td(0)}</tr>
+              <tr class="table-secondary fw-bold">
+                <td>TOTAL</td>${td(surEmission,'fw-bold')}${td(surEmission,'fw-bold')}${td(0,'fw-bold')}
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-
       <!-- SECTION ENCAISSEMENTS -->
       <h6 class="fw-semibold text-secondary mb-2">
         <i class="fa-solid fa-coins me-1"></i>Détail des encaissements
       </h6>
+      <div class="table-card-wrapper border">
       <div class="table-responsive mb-4">
         <table class="table table-bordered table-sm align-middle small">
           <thead class="table-light">
@@ -252,6 +254,7 @@ function afficherRapport(r) {
             </tr>
           </tbody>
         </table>
+      </div>
       </div>
 
       <!-- OBSERVATIONS -->
