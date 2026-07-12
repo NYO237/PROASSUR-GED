@@ -47,14 +47,12 @@
             width: 100%;
         }
 
-        .sidebar .sidebar-brand img{
-                max-height: 190px;
-                width: auto;
-                object-fit: contain;
-                filter: brightness(0) invert(1);
-            }
-                
-            
+        .sidebar-brand img {
+            max-height: 45px;
+            width: auto;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
 
         /* 💻 Ajustements pour les Écrans PC (A partir de 768px) */
         @media (min-width: 768px) {
@@ -251,7 +249,7 @@
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a href="/demandes_recues" class="nav-link" data-target="tab-demandes-recues">
-                            <i class="fa-solid fa-home me-2"></i> Demandes reçues
+                            <i class="fa-solid fa-inbox me-2"></i> Demandes reçues
                         </a>
                     </li>
                     <li class="nav-item">
@@ -262,12 +260,12 @@
                     </li>
                     <li class="nav-item">
                         <a href="/scanner_dossier" class="nav-link" data-target="tab-scanner-dossier">
-                            <i class="fa-solid fa-folder-open me-2"></i> Scanner un dossier
+                            <i class="fa-solid fa-file-signature me-2"></i> Scanner un dossier
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/etat_production" class="nav-link" data-target="tab-etat-production">
-                            <i class="fa-solid fa-book me-2"></i> État de production
+                            <i class="fa-solid fa-briefcase me-2"></i> État de production
                         </a>
                     </li>
                     <li class="nav-item">
@@ -277,25 +275,24 @@
                     </li>
                     <li class="nav-item">
                         <a href="/etat_recettes" class="nav-link" data-target="tab-etat-recettes">
-                            <i class="fa-solid fa-dollar me-2"></i> Rapport de caisse
-                            <!-- <i class="fa-solid fa-dollar me-2"></i> État des recettes -->
+                            <i class="fa-solid fa-cash-register me-2"></i> Rapport de caisse
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/statistiques" class="nav-link" data-target="tab-statistiques">
-                            <i class="fa-solid fa-chart-line me-2"></i> Statistiques
+                            <i class="fa-solid fa-chart-pie me-2"></i> Statistiques
                         </a>
                     </li>
                     
-                    <li class="nav-item chef-agence-only">
+                    <li class="nav-item mt-4 chef-agence-only">
                         <a href="/utilisateurs" class="nav-link active" data-target="tab-utilisateurs">
-                            <i class="fa-solid fa-user-tie me-2"></i> Utilisateurs
+                            <i class="fa-solid fa-users-gear me-2"></i> Utilisateurs
                         </a>
                     </li>
                     
                     <li class="nav-item">
                         <a href="/profil_proassur" class="nav-link" data-target="tab-profil">
-                            <i class="fa-solid fa-user me-2"></i> Mon profil
+                            <i class="fa-solid fa-user-shield me-2"></i> Mon profil
                         </a>
                     </li>
                 </ul>
@@ -303,7 +300,7 @@
                 <!-- Zone de déconnexion toujours calée en bas de la sidebar -->
                 <div class="logout-zone border-top border-secondary">
                     <button class="btn btn-logout w-100 fw-semibold rounded-3 py-2" onclick="localStorage.removeItem('token'); sessionStorage.clear(); window.location.href = '/';">
-                        <i class="fa-solid fa-right-from-bracket me-2"></i> Déconnexion
+                        <i class="fa-solid fa-power-off me-2"></i> Déconnexion
                     </button>
                 </div>
             </div>

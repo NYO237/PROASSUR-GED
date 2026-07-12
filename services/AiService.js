@@ -13,7 +13,7 @@ const REGLES_SYSTEME = `Tu es un expert PROASSUR (assurance auto, Cameroun). Ret
 
 TYPE DE DOCUMENT (ordre de priorité) :
 1. "attestation" si "Vignette ou DTA" présent. num_attestation=nombre 8-10 chiffres isolé près de cette mention. dta=montant après "Vignette ou DTA:".
-2. "carte rose" si un code de 2 LETTRES (ex: "SW", "MD", ou toute autre paire de lettres) apparaît ISOLÉ SEUL sur sa propre ligne (PAS une immatriculation type "SW 520 BR" où lettres et chiffres sont sur la MÊME ligne), généralement suivi un peu plus loin d'un nombre isolé de 8 chiffres. Autres indices : "CEDEAO", "carte internationale". num_carte_rose=ce nombre isolé de 8 chiffres.
+2. "carte rose" si un code de 2 LETTRES apparaît DEUX FOIS D'AFFILÉE sur la MÊME ligne, casse différente ou non (ex: "SW sw", "MH mh", etc.) — PAS une immatriculation type "SW 520 BR" où lettres et chiffres sont ensemble. Autres indices : "CEDEAO", "carte internationale". num_carte_rose=un nombre isolé de 8 chiffres qui apparaît PLUS LOIN dans le document, même après d'autres champs (numéro de châssis, adresse, mentions "PROASSUR SA" répétées) — c'est presque toujours le DERNIER nombre isolé de 8 chiffres de tout le texte, souvent la toute dernière ligne. Ne pas confondre avec le numéro de châssis (alphanumérique, jamais purement numérique à 8 chiffres).
 3. "contrat" si "Conditions Particulières" ou "Prime Nette" ou "Décompte de prime" ou "Responsabilité Civile" ou "Avenant au contrat". Alors num_carte_rose=null et num_attestation=null.
 4. "état de recettes" si "état de recettes"/"recettes" présent.
 5. sinon "autre".
@@ -26,14 +26,16 @@ DATE D'ÉMISSION : après "Emis le" (souvent juste avant "Fait à DOUALA"), form
 
 CONDUCTEUR : nom_conducteur = le nom juste AVANT "Genre :" dans la section "Caractéristiques Véhicule" (ex: "1 M. MBATCHOU STEPHANE YANAISE" → nom_conducteur="MBATCHOU STEPHANE YANAISE", retire le numéro et le préfixe M./Mme.). Un champ "Conducteur :" plus bas contenant un nom différent est souvent une erreur OCR qui répète le nom de l'assuré : ignore-le si ça arrive, priorité au nom avant "Genre :".
 
-NOMS : ne JAMAIS séparer nom et prénom. Mets le nom complet (tous les mots) dans nom_assure et dans nom_conducteur. prenom_assure et prenom_conducteur restent TOUJOURS null, même si le nom contient plusieurs mots.
+NOMS : ne JAMAIS séparer nom et prénom. Mets le nom complet (tous les mots) dans nom_assure et dans nom_conducteur. prenom_assure et prenom_conducteur restent TOUJOURS null, même si le nom contient plusieurs mots , Fait de meme s'il y a plutot RAISON SOCIALE.
 
 ADRESSE PROASSUR (à ignorer pour marque/modèle) : le texte contient souvent l'adresse du siège PROASSUR, reconnaissable à "Wafa Assurance", "Rue Toyota", "Bonaprisо"/"Bonaprisso" ou "BP:5963 Douala". Ce n'est JAMAIS la marque ou le modèle du véhicule (ex: "Toyota" dans cette adresse n'est pas une marque de voiture) — cherche marque/modele ailleurs dans le texte (souvent près de "VEHICULE" ou d'un nom de modèle type "BLI BLI-150").
 
 AUTRES CHAMPS (toujours extraire si présents, même carte rose/attestation) : nom_assure (retirer préfixe M./Mme.), immatriculation, marque, modele, numero_chassis, dates.
 
+GARANTIES (contrat uniquement) : garanties=liste des noms de garanties du tableau Garanties, sans montants (ex: Responsabilité Civile, Recours Tierce Incendie, Défense et Recours, IPT, Aide à la Réparation). Sinon garanties=[].
+
 JSON attendu :
-{"type_document":"contrat|carte rose|attestation|état de recettes|autre","code_bureau":null,"num_police":null,"num_carte_rose":null,"num_attestation":null,"date_emission":null,"date_effet":null,"date_echeance":null,"nom_assure":null,"prenom_assure":null,"immatriculation":null,"marque":null,"modele":null,"numero_chassis":null,"nom_conducteur":null,"prenom_conducteur":null,"prime_nette":0,"prime_totale":0,"accessoires":0,"tva":0,"carte_rose_montant":0,"fc_automobile":0,"dta":0,"bonus":0}`;
+{"type_document":"contrat|carte rose|attestation|état de recettes|autre","code_bureau":null,"num_police":null,"num_carte_rose":null,"num_attestation":null,"date_emission":null,"date_effet":null,"date_echeance":null,"nom_assure":null,"prenom_assure":null,"immatriculation":null,"marque":null,"modele":null,"numero_chassis":null,"nom_conducteur":null,"prenom_conducteur":null,"prime_nette":0,"prime_totale":0,"accessoires":0,"tva":0,"carte_rose_montant":0,"fc_automobile":0,"dta":0,"bonus":0,"garanties":[]}`;
 
 // Un seul modèle : plus capable que llama-3.1-8b-instant, et avec un plafond
 // journalier (TPD) DEUX FOIS plus généreux que llama-3.3-70b-versatile
@@ -44,7 +46,13 @@ const MODELE = "openai/gpt-oss-120b";
 // ─────────────────────────────────────────────────────────────
 // COMPTEUR DE TOKENS CUMULÉ (identique à avant)
 // ─────────────────────────────────────────────────────────────
-let compteurTokens = { prompt: 0, completion: 0, total: 0, cache: 0, appels: 0 };
+let compteurTokens = {
+  prompt: 0,
+  completion: 0,
+  total: 0,
+  cache: 0,
+  appels: 0,
+};
 
 function reinitialiserCompteurTokens() {
   compteurTokens = { prompt: 0, completion: 0, total: 0, cache: 0, appels: 0 };
@@ -71,7 +79,8 @@ async function appelerGroq(texteDocument, temperature) {
     compteurTokens.prompt += completion.usage.prompt_tokens || 0;
     compteurTokens.completion += completion.usage.completion_tokens || 0;
     compteurTokens.total += completion.usage.total_tokens || 0;
-    compteurTokens.cache += completion.usage.prompt_tokens_details?.cached_tokens || 0;
+    compteurTokens.cache +=
+      completion.usage.prompt_tokens_details?.cached_tokens || 0;
     compteurTokens.appels += 1;
   }
 
@@ -97,7 +106,16 @@ const FORMAT_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 // Jetons qui n'appartiennent qu'à l'adresse fixe du siège PROASSUR — s'ils
 // se retrouvent dans marque/modele, c'est une confusion adresse/véhicule.
-const JETONS_ADRESSE_PROASSUR = /wafa|bonaprisso|bonaprisso|bonaprisо|toyota|douala|bp\s*:?\s*5963/i;
+const JETONS_ADRESSE_PROASSUR =
+  /wafa|bonaprisso|bonaprisso|bonaprisо|toyota|douala|bp\s*:?\s*5963/i;
+
+// Motifs structurels utilisés pour repérer une attestation/carte rose que le
+// modèle aurait classée à tort "autre" (voir bloc dédié dans
+// reponseSembleSuspecte). Indépendants du JSON renvoyé : on les cherche
+// directement dans le texte source.
+const MOTIF_VIGNETTE_DTA = /vignette\s+ou\s+dta/i;
+const MOTIF_CODE_DEUX_LETTRES_REPETE = /\b([A-Z]{2})\s+\1\b/i; // ex: "SW sw", "MH MH"
+const MOTIF_NUMERO_8_CHIFFRES = /\b\d{8}\b/;
 
 // Champs financiers : toujours des entiers FCFA, jamais des décimales.
 const CHAMPS_FINANCIERS = [
@@ -121,7 +139,10 @@ function corrigerSeparateursMilliers(rawJson) {
   let corrige = rawJson;
   for (const champ of CHAMPS_FINANCIERS) {
     const regex = new RegExp(`("${champ}"\\s*:\\s*)(\\d+)\\.(\\d{3})\\b`, "g");
-    corrige = corrige.replace(regex, (match, prefixe, entiers, milliers) => `${prefixe}${entiers}${milliers}`);
+    corrige = corrige.replace(
+      regex,
+      (match, prefixe, entiers, milliers) => `${prefixe}${entiers}${milliers}`,
+    );
   }
   return corrige;
 }
@@ -139,7 +160,10 @@ function reponseSembleSuspecte(rawJson, texteOriginal) {
 
   const texteNormalise = normaliser(texteOriginal);
 
-  if (data.type_document === "contrat" && (!data.num_police || !data.prime_totale)) {
+  if (
+    data.type_document === "contrat" &&
+    (!data.num_police || !data.prime_totale)
+  ) {
     return "contrat sans num_police ou prime_totale";
   }
   if (data.type_document === "attestation" && !data.num_attestation) {
@@ -149,7 +173,31 @@ function reponseSembleSuspecte(rawJson, texteOriginal) {
     return "carte rose sans num_carte_rose";
   }
 
-  for (const champ of ["num_police", "num_carte_rose", "num_attestation", "code_bureau", "numero_chassis"]) {
+  // Les 3 vérifs ci-dessus supposent que type_document est déjà correct.
+  // Un document mal classé "autre" ne déclenche AUCUNE d'entre elles, donc se
+  // perd silencieusement (c'est exactement ce qui est arrivé sur la carte
+  // rose du SUZUKI : classée "autre", jamais rattrapée). On vérifie donc
+  // indépendamment si le texte source contient les motifs des règles 1/2 du
+  // prompt, même quand le modèle dit "autre".
+  if (data.type_document === "autre" || !data.type_document) {
+    if (MOTIF_VIGNETTE_DTA.test(texteOriginal)) {
+      return `type "autre" mais "Vignette ou DTA" présent dans le texte (probable attestation ratée)`;
+    }
+    if (
+      MOTIF_CODE_DEUX_LETTRES_REPETE.test(texteOriginal) &&
+      MOTIF_NUMERO_8_CHIFFRES.test(texteOriginal)
+    ) {
+      return `type "autre" mais motif de carte rose détecté (code 2 lettres répété + numéro 8 chiffres, probable carte rose ratée)`;
+    }
+  }
+
+  for (const champ of [
+    "num_police",
+    "num_carte_rose",
+    "num_attestation",
+    "code_bureau",
+    "numero_chassis",
+  ]) {
     if (!champTrouveDansTexte(data[champ], texteNormalise)) {
       return `champ "${champ}"="${data[champ]}" absent du texte source (probable hallucination)`;
     }
@@ -169,11 +217,17 @@ function reponseSembleSuspecte(rawJson, texteOriginal) {
     }
   }
 
-  if (data.immatriculation && !FORMAT_IMMATRICULATION.test(String(data.immatriculation).trim())) {
+  if (
+    data.immatriculation &&
+    !FORMAT_IMMATRICULATION.test(String(data.immatriculation).trim())
+  ) {
     return `immatriculation "${data.immatriculation}" ne ressemble pas à une plaque (champ probablement mélangé)`;
   }
 
-  if (JETONS_ADRESSE_PROASSUR.test(String(data.marque || "")) || JETONS_ADRESSE_PROASSUR.test(String(data.modele || ""))) {
+  if (
+    JETONS_ADRESSE_PROASSUR.test(String(data.marque || "")) ||
+    JETONS_ADRESSE_PROASSUR.test(String(data.modele || ""))
+  ) {
     return `marque="${data.marque}"/modele="${data.modele}" ressemble à l'adresse du siège PROASSUR, pas au véhicule`;
   }
 
@@ -183,7 +237,12 @@ function reponseSembleSuspecte(rawJson, texteOriginal) {
   if (data.type_document === "contrat") {
     for (const champ of CHAMPS_FINANCIERS) {
       const valeur = data[champ];
-      if (typeof valeur === "number" && valeur > 0 && valeur < 100 && champ !== "bonus") {
+      if (
+        typeof valeur === "number" &&
+        valeur > 0 &&
+        valeur < 100 &&
+        champ !== "bonus"
+      ) {
         return `champ financier "${champ}"=${valeur} anormalement faible pour un contrat (probable "X.000" mal interprété)`;
       }
     }
@@ -209,11 +268,15 @@ function appliquerCorrectionsDeterministes(rawJson, texteOriginal) {
   // on refusionne dans l'ordre d'origine (nom puis prénom) plutôt que de
   // payer une relance pour ça.
   if (data.prenom_assure) {
-    data.nom_assure = [data.nom_assure, data.prenom_assure].filter(Boolean).join(" ");
+    data.nom_assure = [data.nom_assure, data.prenom_assure]
+      .filter(Boolean)
+      .join(" ");
     data.prenom_assure = null;
   }
   if (data.prenom_conducteur) {
-    data.nom_conducteur = [data.nom_conducteur, data.prenom_conducteur].filter(Boolean).join(" ");
+    data.nom_conducteur = [data.nom_conducteur, data.prenom_conducteur]
+      .filter(Boolean)
+      .join(" ");
     data.prenom_conducteur = null;
   }
 
@@ -246,7 +309,13 @@ function appliquerCorrectionsDeterministes(rawJson, texteOriginal) {
 
   // Normalise les identifiants en chaînes (le modèle renvoie parfois un
   // nombre JSON au lieu d'une chaîne, ex: num_carte_rose:19877842).
-  for (const champ of ["num_police", "num_carte_rose", "num_attestation", "code_bureau", "numero_chassis"]) {
+  for (const champ of [
+    "num_police",
+    "num_carte_rose",
+    "num_attestation",
+    "code_bureau",
+    "numero_chassis",
+  ]) {
     if (typeof data[champ] === "number") {
       data[champ] = String(data[champ]);
     }
@@ -268,7 +337,9 @@ async function analyserTexteDocument(texteDocument) {
     if (raisonSuspecte) {
       console.warn(`[aiService] Réponse suspecte : ${raisonSuspecte}`);
       console.warn("[aiService] Contenu brut avant nouvelle tentative :", raw);
-      console.warn("[aiService] → nouvelle tentative (température non nulle pour varier l'échantillon).");
+      console.warn(
+        "[aiService] → nouvelle tentative (température non nulle pour varier l'échantillon).",
+      );
 
       // À température 0, une deuxième tentative donnerait la même réponse
       // (fausse). On varie légèrement la température pour obtenir un autre
@@ -280,7 +351,7 @@ async function analyserTexteDocument(texteDocument) {
       const raisonApresRelance = reponseSembleSuspecte(raw, texteDocument);
       if (raisonApresRelance) {
         console.warn(
-          `[aiService] ⚠️ Réponse toujours suspecte après relance : ${raisonApresRelance} — à vérifier manuellement.`
+          `[aiService] ⚠️ Réponse toujours suspecte après relance : ${raisonApresRelance} — à vérifier manuellement.`,
         );
       }
     }

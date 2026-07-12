@@ -291,6 +291,17 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
         [contrat.bonus || 0, idDocument]
       );
 
+      // Garanties (Responsabilité Civile, Défense et Recours, etc.) — juste les noms, sans montants
+      if (Array.isArray(contrat.garanties)) {
+        for (const libelle of contrat.garanties) {
+          if (!libelle) continue; // libelle est NOT NULL en BDD, on ignore les entrées vides
+          await conn.query(
+            `INSERT INTO garantie (id_document, libelle, prime_periode) VALUES (?, ?, ?)`,
+            [idDocument, libelle, 0]
+          );
+        }
+      }
+
       console.log(`[dbScanService] ✅ Contrat ${code}/${police} inséré avec id=${idDocument}`);
     }
 

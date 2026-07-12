@@ -51,20 +51,28 @@ async function getCartesSynthese(periodeBrute) {
   const periode = normaliserPeriode(periodeBrute);
   const clContrat = clausesPeriode('c.date_emission', periode);
   const clDemande = clausesPeriode('d.date_demande', periode);
+  const clRapport = clausesPeriode('r.date_rapport', periode);
 
   const [lignesContrats] = await pool.query(`
     SELECT
       COUNT(DISTINCT CASE WHEN ${clContrat.actuel} THEN c.id_document END) AS contrats_actuel,
       COUNT(DISTINCT CASE WHEN ${clContrat.precedent} THEN c.id_document END) AS contrats_precedent,
       COUNT(DISTINCT CASE WHEN ${clContrat.actuel} THEN c.id_vehicule END) AS vehicules_actuel,
-      COUNT(DISTINCT CASE WHEN ${clContrat.actuel} THEN v.id_assure END) AS assures_actuel,
-      COALESCE(SUM(CASE WHEN ${clContrat.actuel} THEN p.prime_totale END), 0) AS ca_actuel,
-      COALESCE(SUM(CASE WHEN ${clContrat.precedent} THEN p.prime_totale END), 0) AS ca_precedent
+      COUNT(DISTINCT CASE WHEN ${clContrat.actuel} THEN v.id_assure END) AS assures_actuel
     FROM contrat c
-    LEFT JOIN prime p ON p.id_document = c.id_document
     LEFT JOIN vehicule v ON v.id_vehicule = c.id_vehicule
   `);
   const s = lignesContrats[0];
+
+  // ── CA réel = total des encaissements du rapport journalier (PDF ORASS scanné),
+  //    et non la prime émise (contrat/prime), qui ne reflète pas l'argent réellement encaissé.
+  const [lignesCA] = await pool.query(`
+    SELECT
+      COALESCE(SUM(CASE WHEN ${clRapport.actuel} THEN r.sur_emission_especes END), 0) AS ca_actuel,
+      COALESCE(SUM(CASE WHEN ${clRapport.precedent} THEN r.sur_emission_especes END), 0) AS ca_precedent
+    FROM rapport_journalier r
+  `);
+  const caRow = lignesCA[0];
 
   const [lignesDemandes] = await pool.query(`
     SELECT
@@ -77,12 +85,12 @@ async function getCartesSynthese(periodeBrute) {
   return {
     periode,
     contrats: s.contrats_actuel,
-    ca: Number(s.ca_actuel),
+    ca: Number(caRow.ca_actuel),
     vehicules_assures: s.vehicules_actuel,
     assures: s.assures_actuel,
     demandes: dRow.demandes_actuel,
     evolution_contrats: calculEvolution(s.contrats_actuel, s.contrats_precedent),
-    evolution_ca: calculEvolution(s.ca_actuel, s.ca_precedent),
+    evolution_ca: calculEvolution(caRow.ca_actuel, caRow.ca_precedent),
     evolution_demandes: calculEvolution(dRow.demandes_actuel, dRow.demandes_precedent),
   };
 }
@@ -176,15 +184,31 @@ async function recupererContratsParCle(periode) {
   const fenetre = clauseFenetre('c.date_emission', periode);
 
   const [rows] = await pool.query(`
-    SELECT ${cle} AS cle, COUNT(DISTINCT c.id_document) AS nb, COALESCE(SUM(p.prime_totale), 0) AS ca
+    SELECT ${cle} AS cle, COUNT(DISTINCT c.id_document) AS nb
     FROM contrat c
-    LEFT JOIN prime p ON p.id_document = c.id_document
     ${fenetre}
     GROUP BY cle
   `);
 
   const map = new Map();
-  rows.forEach((r) => map.set(String(r.cle), { nb: r.nb, ca: Number(r.ca) }));
+  rows.forEach((r) => map.set(String(r.cle), { nb: r.nb }));
+  return map;
+}
+
+// ── CA réel par créneau, basé sur les encaissements du rapport journalier ────
+async function recupererCAParCle(periode) {
+  const cle = expressionCle('r.date_rapport', periode);
+  const fenetre = clauseFenetre('r.date_rapport', periode);
+
+  const [rows] = await pool.query(`
+    SELECT ${cle} AS cle, COALESCE(SUM(r.sur_emission_especes), 0) AS ca
+    FROM rapport_journalier r
+    ${fenetre}
+    GROUP BY cle
+  `);
+
+  const map = new Map();
+  rows.forEach((r) => map.set(String(r.cle), Number(r.ca)));
   return map;
 }
 
@@ -215,14 +239,15 @@ async function recupererDemandesParCle(periode) {
 async function getEvolution(periodeBrute) {
   const periode = normaliserPeriode(periodeBrute);
 
-  const [mapContrats, mapDemandes] = await Promise.all([
+  const [mapContrats, mapDemandes, mapCA] = await Promise.all([
     recupererContratsParCle(periode),
     recupererDemandesParCle(periode),
+    recupererCAParCle(periode),
   ]);
 
   let buckets;
   if (periode === 'tout') {
-    const cles = new Set([...mapContrats.keys(), ...mapDemandes.keys()]);
+    const cles = new Set([...mapContrats.keys(), ...mapDemandes.keys(), ...mapCA.keys()]);
     buckets = [...cles].sort().map((c) => ({ cle: c, label: c }));
     if (buckets.length === 0) {
       const anneeActuelle = String(new Date().getFullYear());
@@ -236,7 +261,7 @@ async function getEvolution(periodeBrute) {
     periode,
     labels: buckets.map((b) => b.label),
     contrats: buckets.map((b) => (mapContrats.get(b.cle) || { nb: 0 }).nb),
-    chiffre_affaires: buckets.map((b) => (mapContrats.get(b.cle) || { ca: 0 }).ca),
+    chiffre_affaires: buckets.map((b) => mapCA.get(b.cle) || 0),
     demandes: buckets.map((b) => mapDemandes.get(b.cle) || 0),
   };
 }
