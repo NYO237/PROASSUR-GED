@@ -14,6 +14,9 @@ function authenticateToken(req, res, next) {
 
   try {
     const publicKey = process.env.JWT_PUBLIC_KEY.replace(/\\n/g, '\n');
+    console.log('DEBUG clé publique — longueur:', publicKey ? publicKey.length : 'UNDEFINED');
+    console.log('DEBUG clé publique — début:', publicKey ? JSON.stringify(publicKey.substring(0, 35)) : 'UNDEFINED');
+    console.log('DEBUG clé publique — fin:', publicKey ? JSON.stringify(publicKey.substring(publicKey.length - 35)) : 'UNDEFINED');
     req.user = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
     next();
   } catch (error) {

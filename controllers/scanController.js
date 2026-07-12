@@ -40,6 +40,9 @@ async function scannerLotDossiers(req, res) {
     const results = [];
     let nbIgnores = 0;
 
+    // On repart de zéro pour le suivi des tokens de ce lot précis
+    aiService.reinitialiserCompteurTokens();
+
     // ── Traitement séquentiel des fichiers ──────────────────────────────────
     for (const file of files) {
       const cleFichier = `${file.originalname}::${file.size}`;
@@ -82,6 +85,13 @@ async function scannerLotDossiers(req, res) {
       }
     }
 
+    // ── Bilan de consommation de tokens pour ce lot ─────────────────────────
+    const usageTokens = aiService.getTotalTokensUtilises();
+    console.log(
+      `[Scanner] Tokens utilisés pour ce lot : ${usageTokens.total} ` +
+      `(${usageTokens.prompt} entrée / ${usageTokens.completion} sortie, ${usageTokens.cache} en cache, ${usageTokens.appels} appel(s) Groq)`
+    );
+
     // ── Filtrage des résultats valides ──────────────────────────────────────
     const documentsAnalyses = results.filter((d) => d !== null);
 
@@ -93,6 +103,7 @@ async function scannerLotDossiers(req, res) {
           statistiques: stats,
           lignes: [],
           fichiers_ignores: nbIgnores,
+          tokens_utilises: usageTokens,
         });
       }
       return res.status(422).json({
@@ -162,6 +173,7 @@ async function scannerLotDossiers(req, res) {
       lignes: Object.values(structurePolices),
       fichiers_ignores: nbIgnores,
       avertissement_bdd: erreurSauvegardeBDD, // null si tout s'est bien sauvegardé
+      tokens_utilises: usageTokens,
     });
 
   } catch (error) {
