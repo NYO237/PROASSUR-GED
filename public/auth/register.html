@@ -4,113 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ProAssur - Inscription</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts : Synchronisé avec l'accueil -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bleu-primary: #0f2c59;
-            --bleu-secondary: #1746a2;
-            --rouge-accent: #d72323;
-            --text-dark: #1e293b;
+            --navy-900: #0f2c59;
+            --blue-600: #1746a2;
+            --red-600: #d72323;
+            --red-700: #a81c1c;
+            --paper: #f5f6fa;
+            --ink-900: #10182b;
+            --slate-500: #5b6478;
+            --line: rgba(15, 44, 89, 0.12);
+            --radius-md: 16px;
+            --radius-sm: 12px;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            color: var(--text-dark);
+            color: var(--ink-900);
             -webkit-font-smoothing: antialiased;
-            background: linear-gradient(135deg, rgba(15, 44, 89, 0.3) 0%, rgba(23, 70, 162, 0.6) 100%), 
-                    url('/ProAssur_Photo.jpeg') no-repeat center center;
+            background: linear-gradient(135deg, rgba(15, 44, 89, 0.6) 0%, rgba(23, 70, 162, 0.3) 100%), 
+                        url('/ProAssur_Photo.jpeg') no-repeat center center;
             background-size: cover !important;
+            background-attachment: fixed;
         }
 
         .auth-card {
             background: #ffffff;
-            border: none;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            padding: 2.5rem;
-            position: relative;
-            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            box-shadow: 0 20px 40px rgba(15, 44, 89, 0.15);
+            padding: 3rem 2.5rem;
             margin-top: 2rem;
             margin-bottom: 2rem;
-        }
-        
-        .auth-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background-color: var(--bleu-secondary);
         }
 
         .logo-container img {
             max-width: 160px;
-            margin-bottom: 1rem;
         }
 
         h2.auth-title {
-            font-weight: 800;
-            color: var(--bleu-primary);
-            margin-bottom: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: var(--navy-900);
+            margin-bottom: 0.4rem;
         }
 
         .form-label {
             font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--bleu-primary);
-            margin-bottom: 0.25rem;
+            font-size: 0.88rem;
+            color: var(--navy-900);
+            margin-bottom: 0.35rem;
         }
 
-        /* Styling des inputs simples pour alléger le visuel du formulaire long */
+        /* Style des inputs simples de l'inscription */
         .form-control, .form-select {
             background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 0.6rem 1rem;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 1rem;
             font-size: 0.95rem;
-        }
-        .form-control:focus, .form-select:focus {
-            background-color: #fff;
-            border-color: var(--rouge-accent);
-            box-shadow: 0 0 0 0.25rem rgba(215, 35, 35, 0.1);
+            color: var(--ink-900);
+            transition: all 0.2s ease;
         }
 
+        .form-control:focus, .form-select:focus {
+            background-color: #fff;
+            border-color: var(--red-600);
+            box-shadow: 0 0 0 3px rgba(215, 35, 35, 0.12);
+            color: var(--ink-900);
+        }
+
+        /* Bouton Rouge - Style de la page d'accueil */
         .btn-rouge {
-            background-color: var(--rouge-accent);
-            color: white;
-            font-weight: 700;
+            background-color: var(--red-600);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
             border: none;
-            border-radius: 10px;
-            padding: 0.8rem;
-            transition: all 0.3s ease;
+            border-radius: 999px;
+            padding: 0.75rem 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
         }
         .btn-rouge:hover {
-            background-color: #b51c1c;
-            color: white;
+            background-color: var(--red-700);
+            color: #fff;
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(215, 35, 35, 0.3);
+            box-shadow: 0 8px 20px rgba(215, 35, 35, 0.25);
         }
 
         .auth-link {
-            color: var(--bleu-secondary);
+            color: var(--blue-600);
             font-weight: 600;
             text-decoration: none;
             font-size: 0.9rem;
-            transition: color 0.2s;
+            transition: color 0.2s ease;
         }
         .auth-link:hover {
-            color: var(--rouge-accent);
+            color: var(--red-600);
         }
 
+        /* Style des alertes JS */
         .alert-danger {
-            font-size: 0.8rem;
-            padding: 0.4rem;
-            margin-top: 0.25rem;
-            border-radius: 6px;
+            font-size: 0.82rem;
+            padding: 0.5rem;
+            margin-top: 0.35rem;
+            border-radius: var(--radius-sm);
             background-color: #fff1f2;
             border-color: #ffe4e6;
             color: #e11d48;
@@ -124,8 +129,8 @@
             <div class="col-12 col-md-10 col-lg-8">
                 
                 <div class="auth-card">
-                    <div class="text-center logo-container">
-                        <img src="/ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid border-bottom pb-2">
+                    <div class="text-center logo-container mb-4">
+                        <img src="/ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid border-bottom pb-3 w-100">
                     </div>
                     
                     <div class="text-center mb-4">

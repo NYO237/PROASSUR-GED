@@ -15,8 +15,15 @@
             --bleu-primary: #0f2c59;   /* Bleu dominant (Barre latérale) */
             --bleu-secondary: #1746a2; /* Bleu d'interaction */
             --rouge-accent: #d72323;   /* Rouge dynamique (15%) */
-            --bg-light: #f4f7f6;       /* Fond de la zone de contenu */
+            --bg-light: #f8fafc;       /* Fond adouci style page d'accueil */
             --text-dark: #1e293b;
+            --slate-500: #64748b;
+            --line: #e2e8f0;
+
+            /* Rayons augmentés de la page d'accueil pour des bords plus doux */
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
         }
 
         body {
@@ -65,7 +72,7 @@
                 display: flex !important;
                 flex-direction: column;
                 justify-content: space-between;
-                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
             }
             .sidebar-brand {
                 justify-content: center;
@@ -88,8 +95,6 @@
                 width: 100%;
                 object-fit: contain;
             }
-
-              
         }
 
         /* --- STYLES DES COMPOSANTS --- */
@@ -100,7 +105,7 @@
             font-weight: 500;
             padding: 0.8rem 1.2rem;
             margin: 0.3rem 1rem;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -146,7 +151,7 @@
 
         /* --- CONTENU PRINCIPAL --- */
         .dashboard-header {
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid var(--line);
             padding-bottom: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -155,24 +160,41 @@
             color: white;
             font-weight: 600;
             letter-spacing: 0.5px;
-            box-shadow: 0 4px 10px rgba(215, 35, 35, 0.25);
+            box-shadow: 0 4px 10px rgba(215, 35, 35, 0.15);
         }
 
-        /* Cartes de statistiques */
+        /* CARTES DE STATISTIQUES PLUS ARRONDIES ET FLUIDES */
         .stat-card {
-            border: none;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
+            background: #ffffff !important;
+            border: 1px solid var(--line) !important;
+            border-radius: var(--radius-lg) !important;
+            box-shadow: 0 4px 6px -1px rgba(15, 44, 89, 0.02) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .stat-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(15, 44, 89, 0.05) !important;
+            border-color: rgba(23, 70, 162, 0.2) !important;
+        }
+
+        /* Harmonisation des cartes de graphiques */
+        .card.border-0.shadow-sm.rounded-4 {
+            border: 1px solid var(--line) !important;
+            border-radius: var(--radius-lg) !important;
+            box-shadow: 0 4px 6px -1px rgba(15, 44, 89, 0.02) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card.border-0.shadow-sm.rounded-4:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(15, 44, 89, 0.05) !important;
+            border-color: rgba(23, 70, 162, 0.2) !important;
         }
         
         /* Zone de dépôt pour le scanner */
         .scan-drop-zone {
             background-color: #ffffff;
             border: 2px dashed #cbd5e1 !important;
+            border-radius: var(--radius-lg);
             transition: all 0.2s ease;
         }
         .scan-drop-zone:hover {
@@ -183,28 +205,50 @@
         .btn-primary {
             background-color: var(--bleu-secondary);
             border-color: var(--bleu-secondary);
+            border-radius: var(--radius-md);
+            transition: all 0.25s ease;
         }
         .btn-primary:hover {
             background-color: var(--bleu-primary);
             border-color: var(--bleu-primary);
         }
-        .btn-outline-primary {
-            color: var(--bleu-secondary);
-            border-color: var(--bleu-secondary);
-        }
-        .btn-outline-primary:hover {
-            background-color: var(--bleu-secondary);
-            border-color: var(--bleu-secondary);
-        }
+        
         .text-primary {
             color: var(--bleu-secondary) !important;
         }
 
-        /* Sélecteur de période / bouton actif */
-        .btn-gradient-actif {
+        /* REFONTE COMPLÈTE DU SÉLECTEUR DE PÉRIODE AVEC EFFETS FLUIDES */
+        #selecteur-periode.btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        #selecteur-periode.btn-group > .btn {
+            flex: none;
+            border-radius: var(--radius-md) !important;
+            border: 1px solid var(--line) !important;
+            color: var(--text-dark) !important;
+            background-color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0.5rem 1.2rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #selecteur-periode.btn-group > .btn:hover {
+            background-color: #f1f5f9 !important;
+            color: var(--bleu-secondary) !important;
+            border-color: var(--bleu-secondary) !important;
+            transform: translateY(-2px);
+        }
+        /* Style dynamique de l'état actif hérité du script JS */
+        #selecteur-periode.btn-group > .btn.btn-gradient-actif {
             color: #ffffff !important;
             background-color: var(--bleu-secondary) !important;
             border-color: var(--bleu-secondary) !important;
+            box-shadow: 0 6px 15px rgba(23, 70, 162, 0.15) !important;
+        }
+
+        /* Infos banner */
+        .info-banner {
+            border-radius: var(--radius-md) !important;
         }
     </style>
 </head>
@@ -225,7 +269,7 @@
                 </button>
             </div>
             
-            <!-- Menu de navigation (id="menu" conservé pour tes scripts JS) -->
+            <!-- Menu de navigation -->
             <div class="collapse sidebar-menu" id="menu">
                 <ul class="nav flex-column">
                     <li class="nav-item">
@@ -303,7 +347,7 @@
             <!-- ONGLET : STATISTIQUES -->
             <div id="tab-statistiques" class="tab-content-section mt-4">
 
-                <div class="container-fluid bg-info bg-opacity-10 text-info-emphasis p-3 rounded-3 d-flex align-items-center shadow-sm mb-4 border border-info border-opacity-25">
+                <div class="container-fluid info-banner bg-info bg-opacity-10 text-info-emphasis p-3 d-flex align-items-center shadow-sm mb-4 border border-info border-opacity-25">
                     <p class="mb-0">
                         <strong><i class="fa-solid fa-lightbulb me-2"></i>Infos :</strong>
                         Vue d'ensemble de la production, des demandes et du chiffre d'affaires de PROASSUR.
@@ -311,20 +355,20 @@
                 </div>
 
                 <!-- SELECTEUR DE PERIODE -->
-                <div class="d-flex flex-column flex-sm-row justify-content-sm-end align-items-sm-center gap-2 mb-3">
+                <div class="d-flex flex-column flex-sm-row justify-content-sm-end align-items-sm-center gap-2 mb-4">
                     <span class="small text-secondary">Comparaison à la période équivalente précédente</span>
                     <div class="btn-group flex-wrap" role="group" id="selecteur-periode">
-                        <button type="button" class="btn btn-outline-primary px-3 fw-semibold" data-periode="jour">Aujourd'hui</button>
-                        <button type="button" class="btn btn-outline-primary px-3 fw-semibold" data-periode="semaine">Cette semaine</button>
-                        <button type="button" class="btn btn-outline-primary px-3 fw-semibold" data-periode="mois">Ce mois</button>
-                        <button type="button" class="btn btn-outline-primary px-3 fw-semibold" data-periode="tout">Tout temps</button>
+                        <button type="button" class="btn px-3 fw-semibold" data-periode="jour">Aujourd'hui</button>
+                        <button type="button" class="btn px-3 fw-semibold" data-periode="semaine">Cette semaine</button>
+                        <button type="button" class="btn px-3 fw-semibold" data-periode="mois">Ce mois</button>
+                        <button type="button" class="btn px-3 fw-semibold" data-periode="tout">Tout temps</button>
                     </div>
                 </div>
 
                 <!-- CARTES DE SYNTHESE -->
                 <div class="row g-4 mb-4">
                     <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="card stat-card p-4 bg-white shadow">
+                        <div class="card stat-card p-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-contrats">Contrats</h6>
@@ -339,7 +383,7 @@
                     </div>
 
                     <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="card stat-card p-4 bg-white shadow">
+                        <div class="card stat-card p-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-ca">Chiffre d'affaires</h6>
@@ -354,7 +398,7 @@
                     </div>
 
                     <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="card stat-card p-4 bg-white shadow">
+                        <div class="card stat-card p-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-demandes">Demandes</h6>
@@ -369,7 +413,7 @@
                     </div>
 
                     <div class="col-12 col-sm-6">
-                        <div class="card stat-card p-4 bg-white shadow">
+                        <div class="card stat-card p-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-vehicules">Véhicules assurés</h6>
@@ -383,7 +427,7 @@
                     </div>
 
                     <div class="col-12 col-sm-6">
-                        <div class="card stat-card p-4 bg-white shadow">
+                        <div class="card stat-card p-4">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-assures">Assurés</h6>

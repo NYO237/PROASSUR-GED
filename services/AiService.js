@@ -7,32 +7,36 @@ if (!apiKey) console.error("⚠️ [aiService] GROQ_API_KEY introuvable dans .en
 const client = apiKey ? new Groq({ apiKey }) : null;
 
 // ─────────────────────────────────────────────────────────────
-// RÈGLES SYSTÈME (prompt compressé, inchangé par rapport à avant)
+// RÈGLES SYSTÈME — reformulé plus court (~28% de tokens en moins) mais
+// SANS retirer aucune règle cette fois (contrairement à une tentative
+// précédente qui avait supprimé la règle MONTANTS et provoqué des erreurs).
+// Voir aussi analyserTexteDocument() plus bas : la relance sur réponse
+// suspecte est désactivée temporairement (trop d'appels Groq/tokens).
 // ─────────────────────────────────────────────────────────────
 const REGLES_SYSTEME = `Tu es un expert PROASSUR (assurance auto, Cameroun). Retourne UNIQUEMENT un JSON valide, sans markdown ni texte autour.
 
 TYPE DE DOCUMENT (ordre de priorité) :
 1. "attestation" si "Vignette ou DTA" présent. num_attestation=nombre 8-10 chiffres isolé près de cette mention. dta=montant après "Vignette ou DTA:".
-2. "carte rose" si un code de 2 LETTRES apparaît DEUX FOIS D'AFFILÉE sur la MÊME ligne, casse différente ou non (ex: "SW sw", "MH mh", etc.) — PAS une immatriculation type "SW 520 BR" où lettres et chiffres sont ensemble. Autres indices : "CEDEAO", "carte internationale". num_carte_rose=un nombre isolé de 8 chiffres qui apparaît PLUS LOIN dans le document, même après d'autres champs (numéro de châssis, adresse, mentions "PROASSUR SA" répétées) — c'est presque toujours le DERNIER nombre isolé de 8 chiffres de tout le texte, souvent la toute dernière ligne. Ne pas confondre avec le numéro de châssis (alphanumérique, jamais purement numérique à 8 chiffres).
-3. "contrat" si "Conditions Particulières" ou "Prime Nette" ou "Décompte de prime" ou "Responsabilité Civile" ou "Avenant au contrat". Alors num_carte_rose=null et num_attestation=null.
-4. "état de recettes" si "état de recettes"/"recettes" présent.
+2. "carte rose" si un code de 2 lettres apparaît deux fois d'affilée sur la même ligne, casse différente ou non (ex: "SW sw", "MH mh") — pas une immatriculation type "SW 520 BR" (lettres+chiffres ensemble). Autres indices : "CEDEAO", "carte internationale". num_carte_rose=nombre isolé de 8 chiffres plus loin dans le document (souvent le DERNIER de tout le texte, même après châssis/adresse) — jamais le châssis (alphanumérique).
+3. "contrat" si "Conditions Particulières"/"Prime Nette"/"Décompte de prime"/"Responsabilité Civile"/"Avenant au contrat". Alors num_carte_rose=num_attestation=null.
+4. "état de recettes" si "recettes" présent.
 5. sinon "autre".
 
-MONTANTS (prime_nette, prime_totale, accessoires, tva, carte_rose_montant, fc_automobile, dta, bonus) : dans les documents PROASSUR, le "." est un SÉPARATEUR DE MILLIERS, jamais une décimale. "10.739" signifie 10739 (dix mille sept cent trente-neuf), "1.000" signifie 1000. Retourne TOUJOURS ces champs comme des nombres ENTIERS, sans point (10739, pas 10.739 ; 1000, pas 1 ni 1.000).
+MONTANTS (prime_nette, prime_totale, accessoires, tva, carte_rose_montant, fc_automobile, dta, bonus) : le "." du texte source est un séparateur de milliers, jamais une décimale ("10.739"→10739, "1.000"→1000). Toujours des entiers, sans point.
 
-EXTRACTION NUMÉRO DE POLICE : format XXXX/XXXXXXXXX ou XXXX-XXXXXXXXX. code_bureau=4 chiffres avant "/" ou "-". num_police=chiffres après, sans n° d'avenant. Ex: "2012/1001004139"→bureau="2012", police="1001004139".
+POLICE : format XXXX/XXXXXXXXX ou XXXX-XXXXXXXXX. code_bureau=4 chiffres avant "/" ou "-". num_police=chiffres après, sans n° d'avenant.
 
-DATE D'ÉMISSION : après "Emis le" (souvent juste avant "Fait à DOUALA"), format YYYY-MM-DD. Ne JAMAIS confondre avec "Date d'effet". Absent → null (ne JAMAIS réutiliser une autre date à la place).
+date_emission : uniquement après "Emis le" (≠ date d'effet, ne jamais confondre). Absent → null, ne jamais réutiliser une autre date à la place. Toutes les dates (date_emission, date_effet, date_echeance) au format YYYY-MM-DD, jamais DD/MM/YYYY.
 
-CONDUCTEUR : nom_conducteur = le nom juste AVANT "Genre :" dans la section "Caractéristiques Véhicule" (ex: "1 M. MBATCHOU STEPHANE YANAISE" → nom_conducteur="MBATCHOU STEPHANE YANAISE", retire le numéro et le préfixe M./Mme.). Un champ "Conducteur :" plus bas contenant un nom différent est souvent une erreur OCR qui répète le nom de l'assuré : ignore-le si ça arrive, priorité au nom avant "Genre :".
+CONDUCTEUR : nom_conducteur=nom juste avant "Genre :" (retire numéro et préfixe M./Mme). Un "Conducteur :" différent plus bas est souvent un doublon OCR de l'assuré : ignore-le, priorité au nom avant "Genre :".
 
-NOMS : ne JAMAIS séparer nom et prénom. Mets le nom complet (tous les mots) dans nom_assure et dans nom_conducteur. prenom_assure et prenom_conducteur restent TOUJOURS null, même si le nom contient plusieurs mots , Fait de meme s'il y a plutot RAISON SOCIALE.
+NOMS : ne jamais séparer nom et prénom (ni raison sociale) — nom complet dans nom_assure/nom_conducteur. prenom_assure et prenom_conducteur restent toujours null.
 
-ADRESSE PROASSUR (à ignorer pour marque/modèle) : le texte contient souvent l'adresse du siège PROASSUR, reconnaissable à "Wafa Assurance", "Rue Toyota", "Bonaprisо"/"Bonaprisso" ou "BP:5963 Douala". Ce n'est JAMAIS la marque ou le modèle du véhicule (ex: "Toyota" dans cette adresse n'est pas une marque de voiture) — cherche marque/modele ailleurs dans le texte (souvent près de "VEHICULE" ou d'un nom de modèle type "BLI BLI-150").
+ADRESSE PROASSUR ("Wafa Assurance", "Rue Toyota", "Bonaprisso", "BP:5963 Douala") ≠ marque/modèle du véhicule (ex: "Toyota" de l'adresse n'est pas une marque) — cherche marque/modele près de "VEHICULE" ou d'un nom type "BLI BLI-150".
 
-AUTRES CHAMPS (toujours extraire si présents, même carte rose/attestation) : nom_assure (retirer préfixe M./Mme.), immatriculation, marque, modele, numero_chassis, dates.
+Extraire aussi (même carte rose/attestation) : nom_assure (sans M./Mme), immatriculation, marque, modele, numero_chassis, dates, code_bureau, num_police.
 
-GARANTIES (contrat uniquement) : garanties=liste des noms de garanties du tableau Garanties, sans montants (ex: Responsabilité Civile, Recours Tierce Incendie, Défense et Recours, IPT, Aide à la Réparation). Sinon garanties=[].
+GARANTIES (contrat uniquement) : noms du tableau Garanties sans montants (ex: Responsabilité Civile, Recours Tierce Incendie, Défense et Recours, IPT, Aide à la Réparation). Sinon [].
 
 JSON attendu :
 {"type_document":"contrat|carte rose|attestation|état de recettes|autre","code_bureau":null,"num_police":null,"num_carte_rose":null,"num_attestation":null,"date_emission":null,"date_effet":null,"date_echeance":null,"nom_assure":null,"prenom_assure":null,"immatriculation":null,"marque":null,"modele":null,"numero_chassis":null,"nom_conducteur":null,"prenom_conducteur":null,"prime_nette":0,"prime_totale":0,"accessoires":0,"tva":0,"carte_rose_montant":0,"fc_automobile":0,"dta":0,"bonus":0,"garanties":[]}`;
@@ -62,29 +66,56 @@ function getTotalTokensUtilises() {
   return { ...compteurTokens };
 }
 
-async function appelerGroq(texteDocument, temperature) {
-  const completion = await client.chat.completions.create({
-    model: MODELE,
-    messages: [
-      { role: "system", content: REGLES_SYSTEME },
-      { role: "user", content: texteDocument },
-    ],
-    temperature,
-    max_completion_tokens: 1500, // gpt-oss inclut du raisonnement interne, prévoir de la marge
-    reasoning_effort: "low", // extraction simple : pas besoin d'un raisonnement poussé
-    response_format: { type: "json_object" },
-  });
+// Détecte une erreur 429 (rate limit) renvoyée par l'API Groq.
+function estErreurRateLimit(erreur) {
+  return erreur?.status === 429 || /\b429\b/.test(String(erreur?.message));
+}
 
-  if (completion.usage) {
-    compteurTokens.prompt += completion.usage.prompt_tokens || 0;
-    compteurTokens.completion += completion.usage.completion_tokens || 0;
-    compteurTokens.total += completion.usage.total_tokens || 0;
-    compteurTokens.cache +=
-      completion.usage.prompt_tokens_details?.cached_tokens || 0;
-    compteurTokens.appels += 1;
+// Groq indique le délai d'attente dans le message d'erreur
+// ("Please try again in 4.6125s") : on le réutilise plutôt que d'attendre
+// une durée fixe arbitraire. +500ms de marge de sécurité.
+function extraireAttenteMs(erreurMessage) {
+  const m = String(erreurMessage).match(/try again in ([\d.]+)s/i);
+  return m ? Math.ceil(parseFloat(m[1]) * 1000) + 500 : 5000;
+}
+
+async function appelerGroq(texteDocument, temperature, tentative = 1) {
+  try {
+    const completion = await client.chat.completions.create({
+      model: MODELE,
+      messages: [
+        { role: "system", content: REGLES_SYSTEME },
+        { role: "user", content: texteDocument },
+      ],
+      temperature,
+      max_completion_tokens: 1500, // gpt-oss inclut du raisonnement interne, prévoir de la marge
+      reasoning_effort: "low", // extraction simple : pas besoin d'un raisonnement poussé
+      response_format: { type: "json_object" },
+    });
+
+    if (completion.usage) {
+      compteurTokens.prompt += completion.usage.prompt_tokens || 0;
+      compteurTokens.completion += completion.usage.completion_tokens || 0;
+      compteurTokens.total += completion.usage.total_tokens || 0;
+      compteurTokens.cache +=
+        completion.usage.prompt_tokens_details?.cached_tokens || 0;
+      compteurTokens.appels += 1;
+    }
+
+    return completion.choices[0].message.content;
+  } catch (erreur) {
+    // Rate limit (429) : Groq précise lui-même le délai à respecter avant de
+    // réessayer. On retente jusqu'à 3 fois avant d'abandonner le document.
+    if (estErreurRateLimit(erreur) && tentative <= 3) {
+      const attente = extraireAttenteMs(erreur.message);
+      console.warn(
+        `[aiService] ⏳ Limite Groq (429), nouvelle tentative dans ${attente}ms (essai ${tentative}/3)`
+      );
+      await new Promise((r) => setTimeout(r, attente));
+      return appelerGroq(texteDocument, temperature, tentative + 1);
+    }
+    throw erreur;
   }
-
-  return completion.choices[0].message.content;
 }
 
 // Retire les espaces pour comparer nombres/identifiants malgré les
@@ -104,10 +135,29 @@ const FORMAT_IMMATRICULATION = /^[A-Z]{2,5}\s?\d{2,4}\s?[A-Z]{1,3}$/i;
 // Format de date attendu : YYYY-MM-DD (jamais DD/MM/YYYY ni autre variante)
 const FORMAT_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+// Format source (documents PROASSUR) : DD/MM/YYYY, parfois suivi d'une heure
+// ("08/05/2026 10:44"). Sert au filet de correction déterministe ci-dessous.
+const FORMAT_DATE_FR = /^(\d{2})\/(\d{2})\/(\d{4})/;
+
 // Jetons qui n'appartiennent qu'à l'adresse fixe du siège PROASSUR — s'ils
 // se retrouvent dans marque/modele, c'est une confusion adresse/véhicule.
-const JETONS_ADRESSE_PROASSUR =
-  /wafa|bonaprisso|bonaprisso|bonaprisо|toyota|douala|bp\s*:?\s*5963/i;
+// NB : "bonapriss?o" couvre les deux orthographes vues dans les documents
+// source ("Bonapriso", un seul "s" — celle réellement utilisée — et
+// "Bonaprisso"). L'ancienne regex ne contenait que la variante à double "s"
+// (jamais présente dans les vrais documents) : elle ne matchait donc jamais,
+// ce qui a laissé passer modele="BONAPRISO" en BDD sans être détecté.
+const JETONS_ADRESSE_PROASSUR = /wafa|bonapriss?o|toyota|douala|bp\s*:?\s*5963/i;
+
+// Filet 0 token : repère un numéro de police (XXXX/XXXXXXXXX ou XXXX-XXXXXXXXX)
+// directement dans le texte source, quand le modèle ne l'a pas trouvé lui-même
+// (fréquent sur carte rose/attestation, texte OCR en désordre).
+const FORMAT_POLICE_TEXTE = /\b(\d{4})\s*[\/-]\s*(\d{6,10})\b/;
+
+// Filet 0 token : le vrai numéro d'attestation est toujours juste après la
+// mention "Vignette ou DTA" (règle déjà donnée au modèle) — on revérifie par
+// motif pour rattraper les cas où il prend un autre nombre à la place
+// (ex: un numéro de police apparu plus haut dans le texte).
+const FORMAT_APRES_VIGNETTE = /vignette\s+ou\s+dta[\s\S]{0,120}?\b(\d{8,10})\b/i;
 
 // Motifs structurels utilisés pour repérer une attestation/carte rose que le
 // modèle aurait classée à tort "autre" (voir bloc dédié dans
@@ -264,6 +314,29 @@ function appliquerCorrectionsDeterministes(rawJson, texteOriginal) {
     data.date_emission = null;
   }
 
+  // Filet de correction (0 token) : le modèle recopie parfois les dates au
+  // format source DD/MM/YYYY au lieu du YYYY-MM-DD demandé — la colonne SQL
+  // `date` rejette purement et simplement l'INSERT dans ce cas. Avant la
+  // désactivation temporaire de la relance sur réponse suspecte, c'était
+  // elle qui rattrapait ça (au prix d'un 2ᵉ appel Groq) ; ce correctif fait
+  // la même chose gratuitement pour ce cas précis.
+  for (const champDate of ["date_emission", "date_effet", "date_echeance"]) {
+    const valeur = data[champDate];
+    if (typeof valeur === "string") {
+      const m = valeur.match(FORMAT_DATE_FR);
+      if (m) data[champDate] = `${m[3]}-${m[2]}-${m[1]}`;
+    }
+  }
+
+  // Filet de correction (0 token) : le modèle confond parfois l'adresse du
+  // siège PROASSUR (présente sur chaque document) avec la marque/modèle du
+  // véhicule (ex: marque="Toyota" à cause de "Rue Toyota" dans l'adresse).
+  // Même logique que ci-dessus : la relance rattrapait ça avant, on vide
+  // simplement le(s) champ(s) fautif(s) maintenant plutôt que de laisser une
+  // fausse marque corrompre la fiche véhicule.
+  if (JETONS_ADRESSE_PROASSUR.test(String(data.marque || ""))) data.marque = null;
+  if (JETONS_ADRESSE_PROASSUR.test(String(data.modele || ""))) data.modele = null;
+
   // Le modèle sépare parfois nom/prénom malgré la consigne contraire :
   // on refusionne dans l'ordre d'origine (nom puis prénom) plutôt que de
   // payer une relance pour ça.
@@ -278,6 +351,27 @@ function appliquerCorrectionsDeterministes(rawJson, texteOriginal) {
       .filter(Boolean)
       .join(" ");
     data.prenom_conducteur = null;
+  }
+
+  // Filet 0 token : complète code_bureau/num_police par motif si le modèle
+  // ne les a pas trouvés (fréquent sur carte rose/attestation).
+  if (!data.code_bureau || !data.num_police) {
+    const m = texteOriginal.match(FORMAT_POLICE_TEXTE);
+    if (m) {
+      data.code_bureau = data.code_bureau || m[1];
+      data.num_police  = data.num_police  || m[2];
+    }
+  }
+
+  // Filet 0 token : corrige un num_attestation qui serait en réalité un numéro
+  // de police recopié par erreur (le vrai numéro est juste après "Vignette ou
+  // DTA" dans le texte source).
+  if (data.type_document === "attestation") {
+    const m = texteOriginal.match(FORMAT_APRES_VIGNETTE);
+    if (m && m[1] !== data.num_attestation) {
+      console.warn(`[aiService] num_attestation corrigé par motif : "${data.num_attestation}" → "${m[1]}"`);
+      data.num_attestation = m[1];
+    }
   }
 
   // Bug récurrent observé sur les attestations : le modèle place parfois le
@@ -333,28 +427,28 @@ async function analyserTexteDocument(texteDocument) {
     raw = corrigerSeparateursMilliers(raw); // doit passer AVANT le JSON.parse (voir commentaire de la fonction)
     raw = appliquerCorrectionsDeterministes(raw, texteDocument);
 
-    const raisonSuspecte = reponseSembleSuspecte(raw, texteDocument);
-    if (raisonSuspecte) {
-      console.warn(`[aiService] Réponse suspecte : ${raisonSuspecte}`);
-      console.warn("[aiService] Contenu brut avant nouvelle tentative :", raw);
-      console.warn(
-        "[aiService] → nouvelle tentative (température non nulle pour varier l'échantillon).",
-      );
-
-      // À température 0, une deuxième tentative donnerait la même réponse
-      // (fausse). On varie légèrement la température pour obtenir un autre
-      // essai du même modèle plutôt que d'escalader vers un modèle différent.
-      raw = await appelerGroq(texteDocument, 0.3);
-      raw = corrigerSeparateursMilliers(raw);
-      raw = appliquerCorrectionsDeterministes(raw, texteDocument);
-
-      const raisonApresRelance = reponseSembleSuspecte(raw, texteDocument);
-      if (raisonApresRelance) {
-        console.warn(
-          `[aiService] ⚠️ Réponse toujours suspecte après relance : ${raisonApresRelance} — à vérifier manuellement.`,
-        );
-      }
-    }
+    // ── Relance sur réponse suspecte : DÉSACTIVÉE TEMPORAIREMENT ──────────
+    // reponseSembleSuspecte() déclenchait trop souvent une 2ᵉ requête Groq
+    // complète (coût x2 en tokens), ce qui consommait le quota trop vite.
+    // La fonction reste définie plus haut dans ce fichier : pour la
+    // réactiver, décommenter le bloc ci-dessous. Avant de la remettre, vaut
+    // le coup de resserrer ses règles les plus bavardes (ex: le motif
+    // carte-rose ajouté récemment) pour qu'elle ne se déclenche que sur des
+    // cas vraiment ambigus.
+    //
+    // const raisonSuspecte = reponseSembleSuspecte(raw, texteDocument);
+    // if (raisonSuspecte) {
+    //   console.warn(`[aiService] Réponse suspecte : ${raisonSuspecte}`);
+    //   console.warn("[aiService] Contenu brut avant nouvelle tentative :", raw);
+    //   console.warn("[aiService] → nouvelle tentative (température non nulle pour varier l'échantillon).");
+    //   raw = await appelerGroq(texteDocument, 0.3);
+    //   raw = corrigerSeparateursMilliers(raw);
+    //   raw = appliquerCorrectionsDeterministes(raw, texteDocument);
+    //   const raisonApresRelance = reponseSembleSuspecte(raw, texteDocument);
+    //   if (raisonApresRelance) {
+    //     console.warn(`[aiService] ⚠️ Réponse toujours suspecte après relance : ${raisonApresRelance} — à vérifier manuellement.`);
+    //   }
+    // }
 
     console.log("[aiService] Réponse Groq brute :", raw);
     return raw;

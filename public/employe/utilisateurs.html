@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ProAssur - Espace Employé</title>
     <link rel="stylesheet" href="/bootstrap-css/bootstrap.min.css">
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"> -->
     <link rel="stylesheet" href="/css/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="/js/auth-guard.js"></script>
@@ -15,8 +14,15 @@
             --bleu-primary: #0f2c59;   /* Bleu dominant (Barre latérale) */
             --bleu-secondary: #1746a2; /* Bleu d'interaction */
             --rouge-accent: #d72323;   /* Rouge dynamique (15%) */
-            --bg-light: #f4f7f6;       /* Fond de la zone de contenu */
+            --bg-light: #f8fafc;       /* Fond adouci style page d'accueil */
             --text-dark: #1e293b;
+            --slate-500: #64748b;
+            --line: #e2e8f0;
+
+            /* Rayons de la page d'accueil pour des bords plus doux */
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
         }
 
         body {
@@ -65,7 +71,7 @@
                 display: flex !important;
                 flex-direction: column;
                 justify-content: space-between;
-                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
             }
             .sidebar-brand {
                 justify-content: center;
@@ -88,8 +94,6 @@
                 width: 100%;
                 object-fit: contain;
             }
-
-              
         }
 
         /* --- STYLES DES COMPOSANTS --- */
@@ -100,7 +104,7 @@
             font-weight: 500;
             padding: 0.8rem 1.2rem;
             margin: 0.3rem 1rem;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -146,7 +150,7 @@
 
         /* --- CONTENU PRINCIPAL --- */
         .dashboard-header {
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid var(--line);
             padding-bottom: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -155,38 +159,49 @@
             color: white;
             font-weight: 600;
             letter-spacing: 0.5px;
-            box-shadow: 0 4px 10px rgba(215, 35, 35, 0.25);
+            box-shadow: 0 4px 10px rgba(215, 35, 35, 0.15);
         }
 
-        /* Cartes de statistiques */
-        .stat-card {
-            border: none;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
+        /* CONFIGURATION NOUVEAU DESIGN BOUTONS SÉLECTEURS CLIENTS / EMPLOYÉS */
+        .user-selector-card {
+            background-color: #ffffff !important;
+            border: 2px solid var(--line) !important;
+            border-radius: var(--radius-md) !important;
+            color: var(--slate-500) !important;
+            transition: all 0.25s ease-in-out !important;
+            cursor: pointer;
         }
-        .stat-card:hover {
+        .user-selector-card:hover {
+            border-color: var(--slate-500) !important;
             transform: translateY(-2px);
         }
-        
-        /* Zone de dépôt pour le scanner */
-        .scan-drop-zone {
-            background-color: #ffffff;
-            border: 2px dashed #cbd5e1 !important;
-            transition: all 0.2s ease;
-        }
-        .scan-drop-zone:hover {
+        .btn-check:checked + .user-selector-card {
             border-color: var(--bleu-secondary) !important;
-            background-color: #fafafa;
+            background-color: rgba(23, 70, 162, 0.05) !important;
+            color: var(--bleu-secondary) !important;
+            box-shadow: 0 4px 12px rgba(23, 70, 162, 0.08) !important;
+        }
+        .btn-check:checked + .user-selector-card span {
+            color: var(--bleu-primary) !important;
+        }
+
+        /* Cartes globales */
+        .dashboard-card {
+            background: #ffffff !important;
+            border: 1px solid var(--line) !important;
+            border-radius: var(--radius-lg) !important;
+            box-shadow: 0 4px 6px -1px rgba(15, 44, 89, 0.02) !important;
         }
 
         .btn-primary {
-            background-color: var(--bleu-secondary);
-            border-color: var(--bleu-secondary);
+            background-color: var(--bleu-secondary) !important;
+            border-color: var(--bleu-secondary) !important;
+            border-radius: var(--radius-md) !important;
+            transition: all 0.25s ease;
         }
         .btn-primary:hover {
-            background-color: var(--bleu-primary);
-            border-color: var(--bleu-primary);
+            background-color: var(--bleu-primary) !important;
+            border-color: var(--bleu-primary) !important;
         }
         .text-primary {
             color: var(--bleu-secondary) !important;
@@ -194,12 +209,13 @@
 
         /* --- TABLEAU --- */
         .table-card-wrapper {
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             overflow: hidden;
+            border: 1px solid var(--line) !important;
         }
         .table-responsive {
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* scroll fluide au doigt sur iOS */
+            -webkit-overflow-scrolling: touch;
         }
         .table {
             margin-bottom: 0;
@@ -229,22 +245,17 @@
 </head>
 <body>
 
-    <!-- Conteneur global en Flexbox adaptatif -->
     <div class="d-flex flex-column flex-md-row">
         
         <!-- BARRE LATERALE (SIDEBAR) -->
         <nav class="sidebar">
-            
-            <!-- En-tête : Logo + Bouton Hamburger (Visible uniquement sur mobile) -->
             <div class="sidebar-brand">
                 <img src="ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid">
-                
                 <button class="btn btn-mobile-menu d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
                     <i class="fa-solid fa-bars"></i>
                 </button>
             </div>
             
-            <!-- Menu de navigation (id="menu" conservé pour tes scripts JS) -->
             <div class="collapse sidebar-menu" id="menu">
                 <ul class="nav flex-column">
                     <li class="nav-item">
@@ -283,13 +294,11 @@
                             <i class="fa-solid fa-chart-pie me-2"></i> Statistiques
                         </a>
                     </li>
-                    
                     <li class="nav-item mt-4 chef-agence-only">
                         <a href="/utilisateurs" class="nav-link active" data-target="tab-utilisateurs">
                             <i class="fa-solid fa-users-gear me-2"></i> Utilisateurs
                         </a>
                     </li>
-                    
                     <li class="nav-item">
                         <a href="/profil_proassur" class="nav-link" data-target="tab-profil">
                             <i class="fa-solid fa-user-shield me-2"></i> Mon profil
@@ -297,7 +306,6 @@
                     </li>
                 </ul>
 
-                <!-- Zone de déconnexion toujours calée en bas de la sidebar -->
                 <div class="logout-zone border-top border-secondary">
                     <button class="btn btn-logout w-100 fw-semibold rounded-3 py-2" onclick="localStorage.removeItem('token'); sessionStorage.clear(); window.location.href = '/';">
                         <i class="fa-solid fa-power-off me-2"></i> Déconnexion
@@ -326,23 +334,18 @@
                 </div>
             </div>
 
-
-
             <!-- ONGLET 6 : UTILISATEURS -->
-             
-            
-
             <div id="tab-utilisateurs" class="tab-content-section mt-4">
 
-                <div class="container-fluid">
+                <div class="container-fluid px-0">
                     <div class="row g-3 mb-4">
                         <!-- Option Clients -->
                         <div class="col-12 col-sm-6 col-md-4">
                           <div class="form-check p-0 position-relative">
                             <input type="radio" name="type-utilisateur" id="type-client" value="client" class="btn-check" checked>
-                            <label for="type-client" class="btn btn-outline-secondary d-flex align-items-center justify-content-between p-4 rounded-3 w-100 shadow-sm border-2">
-                              <span class="fs-5 fw-semibold text-start">Clients</span>
-                              <i class="bi bi-people-fill fs-3 opacity-75"></i>
+                            <label for="type-client" class="btn user-selector-card d-flex align-items-center justify-content-between p-4 w-100 shadow-sm border-2">
+                              <span class="fs-5 fw-bold text-start">Clients</span>
+                              <i class="fa-solid fa-users fs-3 opacity-75"></i>
                             </label>
                           </div>
                         </div>
@@ -351,15 +354,16 @@
                         <div class="col-12 col-sm-6 col-md-4">
                           <div class="form-check p-0 position-relative">
                             <input type="radio" name="type-utilisateur" id="type-employe" value="employe" class="btn-check">
-                            <label for="type-employe" class="btn btn-outline-secondary d-flex align-items-center justify-content-between p-4 rounded-3 w-100 shadow-sm border-2">
-                              <span class="fs-5 fw-semibold text-start">Employés</span>
-                              <i class="bi bi-briefcase-fill fs-3 opacity-75"></i>
+                            <label for="type-employe" class="btn user-selector-card d-flex align-items-center justify-content-between p-4 w-100 shadow-sm border-2">
+                              <span class="fs-5 fw-bold text-start">Employés</span>
+                              <i class="fa-solid fa-user-tie fs-3 opacity-75"></i>
                             </label>
                           </div>
                         </div>
                       </div>
                 </div>
-                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+
+                <div class="dashboard-card p-4 bg-white">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                         <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-user-tie text-primary me-2"></i>Liste utilisateurs</h5>
 
@@ -376,8 +380,7 @@
                                 >
                             </div>
 
-                            <button type="button" id="bouton-ouvrir-creer" class="btn fw-semibold text-white text-nowrap"
-                                style="background-color: #1746a2; border: none;">
+                            <button type="button" id="bouton-ouvrir-creer" class="btn btn-primary fw-semibold text-white text-nowrap">
                                 <i class="fa-solid fa-user-plus me-2"></i>Nouvel utilisateur
                             </button>
                         </div>
@@ -385,9 +388,7 @@
 
                     <div id="alerte-utilisateurs-container"></div>
 
-
-                    <div class="table-card-wrapper border">
-
+                    <div class="table-card-wrapper">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead>
@@ -412,22 +413,13 @@
                 </div>
             </div>
 
-            
-
-            
-            <!--  -->
-
-        </div>
-
-
         </main>
     </div>
 
-    
-    <!-- MODALE DE CONFIRMATION (Suspendre / Supprimer) -->
+    <!-- MODALE DE CONFIRMATION -->
     <div class="modal fade" id="modaleConfirmation" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-content border-0 shadow" style="border-radius: var(--radius-lg);">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold" id="confirmation-titre">Confirmation requise</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
@@ -436,8 +428,8 @@
                     <p class="text-secondary mb-0" id="confirmation-message">Êtes-vous sûr ?</p>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-outline-secondary fw-semibold" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-danger fw-semibold" id="confirmation-bouton-valider">Confirmer</button>
+                    <button type="button" class="btn btn-outline-secondary fw-semibold" style="border-radius: var(--radius-md);" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger fw-semibold" style="border-radius: var(--radius-md);" id="confirmation-bouton-valider">Confirmer</button>
                 </div>
             </div>
         </div>
@@ -446,7 +438,7 @@
     <!-- MODALE DE MODIFICATION -->
     <div class="modal fade" id="modaleModifier" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-content border-0 shadow" style="border-radius: var(--radius-lg);">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold text-dark">
                         <i class="fa-solid fa-user-pen text-primary me-2"></i>Modifier l'utilisateur
@@ -460,36 +452,36 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small" for="modifier-nom">Nom</label>
-                            <input type="text" class="form-control" id="modifier-nom" required>
+                            <input type="text" class="form-control" style="border-radius: var(--radius-sm);" id="modifier-nom" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small" for="modifier-prenom">Prénom</label>
-                            <input type="text" class="form-control" id="modifier-prenom">
+                            <input type="text" class="form-control" style="border-radius: var(--radius-sm);" id="modifier-prenom">
                         </div>
 
                         <div class="col-12">
                             <label class="form-label fw-semibold small" for="modifier-identifiant">Identifiant (Email)</label>
-                            <input type="email" class="form-control" id="modifier-identifiant" required>
+                            <input type="email" class="form-control" style="border-radius: var(--radius-sm);" id="modifier-identifiant" required>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label fw-semibold small" for="modifier-mdp">
                                 Nouveau mot de passe <span class="text-secondary fw-normal">(laisser vide pour ne pas changer)</span>
                             </label>
-                            <input type="password" class="form-control" id="modifier-mdp" placeholder="•••••••">
+                            <input type="password" class="form-control" style="border-radius: var(--radius-sm);" id="modifier-mdp" placeholder="•••••••">
                         </div>
 
                         <div class="col-md-6" id="groupe-modifier-telephone">
                             <label class="form-label fw-semibold small" for="modifier-telephone">Téléphone WhatsApp</label>
-                            <input type="text" class="form-control" id="modifier-telephone" required>
+                            <input type="text" class="form-control" style="border-radius: var(--radius-sm);" id="modifier-telephone" required>
                         </div>
                         <div class="col-md-6 d-none" id="groupe-adresse">
                             <label class="form-label fw-semibold small" for="modifier-adresse">Adresse</label>
-                            <input type="text" class="form-control" id="modifier-adresse">
+                            <input type="text" class="form-control" style="border-radius: var(--radius-sm);" id="modifier-adresse">
                         </div>
                         <div class="col-md-6 d-none" id="groupe-sexe">
                             <label class="form-label fw-semibold small" for="modifier-sexe">Sexe</label>
-                            <select class="form-select" id="modifier-sexe">
+                            <select class="form-select" style="border-radius: var(--radius-sm);" id="modifier-sexe">
                                 <option value="M">Masculin</option>
                                 <option value="F">Féminin</option>
                             </select>
@@ -504,9 +496,7 @@
                         </div>
 
                         <div class="col-12 d-grid mt-3">
-                            <button type="submit" class="btn fw-bold py-2 shadow-sm text-white"
-                                id="modifier-bouton-soumettre"
-                                style="background-color: #1746a2; border: none;">
+                            <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm text-white" id="modifier-bouton-soumettre">
                                 <i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer les modifications
                             </button>
                         </div>
@@ -519,7 +509,7 @@
     <!-- MODALE DE CREATION -->
     <div class="modal fade" id="modaleCreer" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-content border-0 shadow" style="border-radius: var(--radius-lg);">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold text-dark">
                         <i class="fa-solid fa-user-plus text-primary me-2"></i>Nouvel utilisateur
@@ -531,7 +521,7 @@
 
                         <div class="col-12">
                             <label class="form-label fw-semibold small" for="creer-roleType">Type d'utilisateur</label>
-                            <select class="form-select" id="creer-roleType">
+                            <select class="form-select" style="border-radius: var(--radius-sm);" id="creer-roleType">
                                 <option value="client">Client</option>
                                 <option value="employe">Employé</option>
                             </select>
@@ -539,37 +529,37 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small" for="creer-nom">Nom</label>
-                            <input type="text" class="form-control" id="creer-nom" required>
+                            <input type="text" class="form-control" style="border-radius: var(--radius-sm);" id="creer-nom" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small" for="creer-prenom">Prénom</label>
-                            <input type="text" class="form-control" id="creer-prenom">
+                            <input type="text" class="form-control" style="border-radius: var(--radius-sm);" id="creer-prenom">
                         </div>
 
                         <div class="col-12">
                             <label class="form-label fw-semibold small" for="creer-identifiant">Identifiant (Email)</label>
-                            <input type="email" class="form-control" id="creer-identifiant" required>
+                            <input type="email" class="form-control" style="border-radius: var(--radius-sm);" id="creer-identifiant" required>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label fw-semibold small" for="creer-mdp">Mot de passe</label>
-                            <input type="password" class="form-control" id="creer-mdp" placeholder="•••••••" required>
+                            <input type="password" class="form-control" style="border-radius: var(--radius-sm);" id="creer-mdp" placeholder="•••••••" required>
                         </div>
 
                         <div class="col-md-6" id="groupe-creer-telephone">
                             <label class="form-label fw-semibold small" for="creer-telephone">Téléphone WhatsApp</label>
-                            <input type="text" class="form-control" id="creer-telephone" required>
+                            <input type="text" class="form-control" style="border-radius: var(--radius-sm);" id="creer-telephone" required>
                         </div>
                         <div class="col-md-6" id="groupe-creer-sexe">
                             <label class="form-label fw-semibold small" for="creer-sexe">Sexe</label>
-                            <select class="form-select" id="creer-sexe">
+                            <select class="form-select" style="border-radius: var(--radius-sm);" id="creer-sexe">
                                 <option value="M">Masculin</option>
                                 <option value="F">Féminin</option>
                             </select>
                         </div>
                         <div class="col-12" id="groupe-creer-adresse">
                             <label class="form-label fw-semibold small" for="creer-adresse">Adresse</label>
-                            <input type="text" class="form-control" id="creer-adresse">
+                            <input type="text" class="form-control" style="border-radius: var(--radius-sm);" id="creer-adresse">
                         </div>
                         <div class="col-12 d-none" id="groupe-creer-chef-agence">
                             <div class="form-check">
@@ -581,9 +571,7 @@
                         </div>
 
                         <div class="col-12 d-grid mt-3">
-                            <button type="submit" class="btn fw-bold py-2 shadow-sm text-white"
-                                id="creer-bouton-soumettre"
-                                style="background-color: #1746a2; border: none;">
+                            <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm text-white" id="creer-bouton-soumettre">
                                 <i class="fa-solid fa-user-plus me-2"></i>Créer l'utilisateur
                             </button>
                         </div>

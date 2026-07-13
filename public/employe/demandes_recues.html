@@ -19,7 +19,7 @@
             --bleu-primary: #0f2c59;   /* Bleu dominant (Barre latérale) */
             --bleu-secondary: #1746a2; /* Bleu d'interaction */
             --rouge-accent: #d72323;   /* Rouge dynamique (15%) */
-            --bg-light: #f4f7f6;       /* Fond de la zone de contenu */
+            --bg-light: #f8fafc;       /* CHANGED: Fond global plus lumineux */
             --text-dark: #1e293b;
         }
 
@@ -43,7 +43,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 1rem;
-            background-color: rgba(0,0,0,0.1); /* Légèrement plus sombre que la sidebar */
+            background-color: rgba(0,0,0,0.1); 
         }
         
         /* Logo passé en blanc via CSS pour contraster sur le bleu foncé */
@@ -233,17 +233,17 @@
         /* --- TABLEAU --- */
         .table-card-wrapper {
             border-radius: 12px;
-            overflow: hidden; /* Garde les coins arrondis pour le header du tableau */
+            overflow: hidden; 
         }
         .table-responsive {
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* scroll fluide au doigt sur iOS */
+            -webkit-overflow-scrolling: touch; 
         }
         .table {
             margin-bottom: 0;
         }
         .table thead {
-            background-color: #f1f5f9;
+            background-color: #edf2f7; /* CHANGED: Ton plus doux */
         }
         .table thead th {
             color: #64748b;
@@ -261,27 +261,20 @@
             vertical-align: middle;
         }
         .table tbody tr:hover {
-            background-color: #f8fafc;
+            background-color: #f4f7f6; /* CHANGED: Hover plus subtil */
         }
     </style>
-
 </head>
 <body>
-
     <div class="d-flex flex-column flex-md-row">
-        
         <!-- BARRE LATERALE (SIDEBAR) -->
         <nav class="sidebar">
-            
             <div class="sidebar-brand">
                 <img src="ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid">
-                
                 <button class="btn btn-mobile-menu d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
                     <i class="fa-solid fa-bars"></i>
                 </button>
             </div>
-            
-            <!-- id="menu" conservé -->
             <div class="collapse sidebar-menu" id="menu">
                 <ul class="nav flex-column">
                     <li class="nav-item">
@@ -320,7 +313,6 @@
                             <i class="fa-solid fa-chart-pie me-2"></i> Statistiques
                         </a>
                     </li>
-                    
                     <li class="nav-item mt-4 chef-agence-only">
                         <a href="/utilisateurs" class="nav-link" data-target="tab-utilisateurs">
                             <i class="fa-solid fa-users-gear me-2"></i> Utilisateurs
@@ -332,7 +324,6 @@
                         </a>
                     </li>
                 </ul>
-
                 <div class="logout-zone border-top border-secondary">
                     <button class="btn btn-logout w-100 fw-semibold rounded-3 py-2" onclick="localStorage.removeItem('token'); sessionStorage.clear(); window.location.href = '/';">
                         <i class="fa-solid fa-power-off me-2"></i> Déconnexion
@@ -340,11 +331,7 @@
                 </div>
             </div>
         </nav>
-
-        <!-- CONTENU PRINCIPAL -->
         <main class="main-content">
-
-            <!-- TITRE -->
             <div class="dashboard-header d-flex justify-content-between align-items-center">
                 <div class="text-start">
                     <h2 class="fw-bold mb-1" style="color: var(--bleu-primary);">Tableau de bord</h2>
@@ -360,32 +347,19 @@
                     </span>
                 </div>
             </div>
-
-            <!-- ONGLET 1 : DEMANDES REÇUES (id conservé) -->
             <div id="tab-demandes-recues" class="tab-content-section">
                 <div class="dashboard-card p-4">
-                    
-                    <!-- En-tête de la carte & Recherche -->
                     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
                         <h5 class="fw-bold mb-0" style="color: var(--bleu-primary);">
                             <i class="fa-solid fa-list-check me-2" style="color: var(--rouge-accent);"></i>Gestion des demandes
                         </h5>
-
-                        <!-- id="recherche-demande" conservé -->
                         <div class="input-group search-wrapper" style="max-width: 350px;">
                             <span class="input-group-text border-end-0">
                                 <i class="fa-solid fa-magnifying-glass"></i>
                             </span>
-                            <input
-                                type="text"
-                                id="recherche-demande"
-                                class="form-control border-start-0 ps-0"
-                                placeholder="Rechercher par nom..."
-                            >
+                            <input type="text" id="recherche-demande" class="form-control border-start-0 ps-0" placeholder="Rechercher par nom...">
                         </div>
                     </div>
-
-                    <!-- Boutons de filtres (IDs conservés) -->
                     <div class="d-flex flex-wrap gap-2 mb-4">
                         <button class="btn btn-status active btn-status-warning" id="demandes_en_attente_bouton">
                             <i class="fa-solid fa-hourglass-half me-2"></i>En attente
@@ -397,8 +371,6 @@
                             <i class="fa-solid fa-circle-xmark me-2"></i>Rejetées
                         </button>
                     </div>
-
-                    <!-- Tableau (id="liste-demandes" conservé) -->
                     <div class="table-card-wrapper border">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
@@ -416,20 +388,14 @@
                                         <th scope="col" class="text-center" id="colonne-actions-header">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="liste-demandes">
-                                    <!-- Les données seront injectées ici par employe-dash-demandes-recues.js -->
-                                </tbody>
+                                <tbody id="liste-demandes"></tbody>
                             </table>
                         </div>
                     </div>
-
                 </div>
             </div>
-
         </main>
     </div>
-
-    <!-- MODAL : Motif de rejet d'une demande -->
     <div class="modal fade" id="modalRejetDemande" tabindex="-1" aria-labelledby="modalRejetDemandeLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -438,19 +404,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Conserve l'id de la demande concernée pendant la saisie -->
                     <input type="hidden" id="rejet-id-demande">
                     <label for="rejet-motif-input" class="form-label">Veuillez préciser le motif du rejet :</label>
-                    <input
-                        type="text"
-                        id="rejet-motif-input"
-                        class="form-control"
-                        placeholder="Ex : document illisible, information manquante..."
-                        maxlength="255"
-                    >
-                    <div class="invalid-feedback" id="rejet-motif-erreur">
-                        Le motif est obligatoire.
-                    </div>
+                    <input type="text" id="rejet-motif-input" class="form-control" placeholder="Ex : document illisible, information manquante..." maxlength="255">
+                    <div class="invalid-feedback" id="rejet-motif-erreur">Le motif est obligatoire.</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -461,8 +418,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Scripts -->
     <script src="/bootstrap-js/bootstrap.bundle.min.js"></script>
     <script src="/js/employe/employe-dash-demandes-recues.js"></script>
     <script src="/js/employe/notifications-badge.js"></script>

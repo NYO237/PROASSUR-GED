@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ProAssur - Espace Employé</title>
     <link rel="stylesheet" href="/bootstrap-css/bootstrap.min.css">
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"> -->
     <link rel="stylesheet" href="/css/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="/js/auth-guard.js"></script>
@@ -15,7 +14,7 @@
         --bleu-primary: #0f2c59;   /* Bleu dominant (Barre latérale) */
         --bleu-secondary: #1746a2; /* Bleu d'interaction */
         --rouge-accent: #d72323;   /* Rouge dynamique (15%) */
-        --bg-light: #f4f7f6;       /* Fond de la zone de contenu */
+        --bg-light: #f8fafc;       /* CHANGED: Fond global plus lumineux */
         --text-dark: #1e293b;
       }
 
@@ -182,7 +181,7 @@
       }
       .scan-drop-zone:hover {
         border-color: var(--bleu-secondary) !important;
-        background-color: #fafafa;
+        background-color: #fdfdfd; /* CHANGED: Léger ajustement hover */
       }
 
       .btn-primary {
@@ -217,7 +216,7 @@
         margin-bottom: 0;
       }
       .table thead {
-        background-color: #f1f5f9;
+        background-color: #edf2f7; /* CHANGED: Ton plus doux */
       }
       .table thead th {
         color: #64748b;
@@ -235,16 +234,13 @@
         vertical-align: middle;
       }
       .table tbody tr:hover {
-        background-color: #f8fafc;
+        background-color: #f4f7f6; /* CHANGED: Hover plus subtil */
       }
     </style>
   </head>
   <body>
-    <!-- Conteneur global en Flexbox adaptatif -->
     <div class="d-flex flex-column flex-md-row">
-      <!-- BARRE LATERALE (SIDEBAR) -->
       <nav class="sidebar">
-        <!-- En-tête : Logo + Bouton Hamburger (Visible uniquement sur mobile) -->
         <div class="sidebar-brand">
           <img src="ProAssur_LOGO+WafaAssurance4.png" alt="Logo ProAssur" class="img-fluid">
 
@@ -258,7 +254,6 @@
           </button>
         </div>
 
-        <!-- Menu de navigation (id="menu" conservé pour tes scripts JS) -->
         <div class="collapse sidebar-menu" id="menu">
           <ul class="nav flex-column">
             <li class="nav-item">
@@ -310,7 +305,6 @@
           </li>
         </ul>
 
-          <!-- Zone de déconnexion toujours calée en bas de la sidebar -->
           <div class="logout-zone border-top border-secondary">
             <button class="btn btn-logout w-100 fw-semibold rounded-3 py-2" onclick="localStorage.removeItem('token'); sessionStorage.clear(); window.location.href = '/';">
               <i class="fa-solid fa-power-off me-2"></i> Déconnexion
@@ -319,9 +313,7 @@
         </div>
       </nav>
 
-      <!-- CONTENU PRINCIPAL -->
       <main class="main-content">
-        <!-- TITRE : TABLEAU DE BORD -->
         <div
           class="dashboard-header d-flex justify-content-between align-items-center"
         >
@@ -336,7 +328,6 @@
           </span>
         </div>
 
-        <!-- ONGLET 3 : Etat de production -->
         <div
           id="tab-etat-production"
           class="tab-content-section mt-4"
@@ -393,18 +384,12 @@
             </div>
 
             <div class="mt-4 border-top pt-3 text-end">
-              <button
-                class="btn btn-primary fw-bold px-4 rounded-3 shadow-sm"
-                id="btn-afficher-production"
-              >
-                <i class="fa-solid fa-spinner"></i> Charger la production
-              </button>
-              <button
-                class="btn btn-success fw-bold px-4 rounded-3 shadow-sm"
-                id="btn-generer-production"
-              >
-                <i class="fa-solid fa-file-excel"></i>Export EXCEL
-              </button>
+                <button class="btn btn-primary fw-bold px-4 rounded-3 shadow-sm" id="btn-afficher-production">
+                    <i class="fa-solid fa-briefcase me-2"></i>Charger la production
+                </button>
+                <button class="btn btn-success fw-bold px-4 rounded-3 shadow-sm" id="btn-generer-production">
+                    <i class="fa-solid fa-file-excel append-me-2"></i>Export EXCEL
+                </button>
             </div>
 
             <div id="zone-donnees-production" class="mt-4 bg-white">
@@ -415,8 +400,7 @@
                       <thead>
                         <tr>
                           <th scope="col">Numero police</th>
-                          <th scope="col">Nom et Prenom</th>  <!-- Nom et prenom de l'assure-->
-                          <th scope="col">Date d'emission</th>
+                          <th scope="col">Nom et Prenom</th>  <th scope="col">Date d'emission</th>
                           <th scope="col">Date effet</th>
                           <th scope="col">Date echeance</th>
                           <th scope="col">Num Carte rose</th>

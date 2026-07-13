@@ -36,6 +36,16 @@ function separerPolice(codeBureau, numPolice) {
   return { code: codeBureau || '-', police: numPolice };
 }
 
+// Rattachement de secours quand l'IA n'a pas réussi à extraire le numéro de
+// police NI l'immatriculation depuis un document (ex: carte rose dont la mise
+// en page ne fait pas apparaître clairement la police). On compare alors sur
+// le nom de l'assuré, normalisé (casse, espaces).
+function nomsCorrespondent(nomA, nomB) {
+  if (!nomA || !nomB) return false;
+  const normaliser = (s) => s.toLowerCase().trim().replace(/\s+/g, ' ');
+  return normaliser(nomA) === normaliser(nomB);
+}
+
 // ─── Vérification des fichiers déjà analysés ─────────────────────────────────
 // Utilisé AVANT l'appel à l'IA pour ne pas gaspiller de tokens sur des fichiers
 // déjà présents en BDD. Comparaison par nom EXACT + TAILLE en octets :
@@ -207,19 +217,24 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
     for (const contrat of contrats) {
       const { code, police } = separerPolice(contrat.code_bureau, contrat.num_police);
 
-      // Rattachement par numéro de police (priorité) puis par immatriculation (fallback)
+      // Rattachement par numéro de police (priorité), puis par immatriculation,
+      // puis en dernier recours par nom d'assuré — utile quand l'IA n'a pas
+      // réussi à extraire ni la police ni l'immatriculation sur la carte rose
+      // ou l'attestation (ex: mise en page du document sans police visible).
       let idCarteRose = idsCartesRoses.find(cr => {
         const p = separerPolice(cr.doc.code_bureau, cr.doc.num_police);
         return p.code === code && p.police === police;
       })?.idDocument
-        || idsCartesRoses.find(cr => cr.doc.immatriculation === contrat.immatriculation)?.idDocument
+        || idsCartesRoses.find(cr => cr.doc.immatriculation && cr.doc.immatriculation === contrat.immatriculation)?.idDocument
+        || idsCartesRoses.find(cr => nomsCorrespondent(cr.doc.nom_assure, contrat.nom_assure))?.idDocument
         || null;
 
       let idAttestation = idsAttestations.find(att => {
         const p = separerPolice(att.doc.code_bureau, att.doc.num_police);
         return p.code === code && p.police === police;
       })?.idDocument
-        || idsAttestations.find(att => att.doc.immatriculation === contrat.immatriculation)?.idDocument
+        || idsAttestations.find(att => att.doc.immatriculation && att.doc.immatriculation === contrat.immatriculation)?.idDocument
+        || idsAttestations.find(att => nomsCorrespondent(att.doc.nom_assure, contrat.nom_assure))?.idDocument
         || null;
 
       console.log(`[dbScanService] Contrat ${code}/${police} | immat: ${contrat.immatriculation} | CR: ${idCarteRose} | ATT: ${idAttestation}`);

@@ -16,6 +16,14 @@ function parseAiJson(rawText) {
   }
 }
 
+// Comparaison de noms tolérante à la casse et aux espaces, utilisée pour le
+// rattachement de secours ci-dessous (même logique que côté DbScanService).
+function nomsCorrespondent(nomA, nomB) {
+  if (!nomA || !nomB) return false;
+  const normaliser = (s) => s.toLowerCase().trim().replace(/\s+/g, ' ');
+  return normaliser(nomA) === normaliser(nomB);
+}
+
 async function scannerLotDossiers(req, res) {
   try {
     const files = req.files || (req.file ? [req.file] : []);
@@ -72,6 +80,22 @@ async function scannerLotDossiers(req, res) {
         if (!jsonDoc) { results.push(null); continue; }
 
         const jsonRestaure = pdfService.restaurerDonneesSensibles(jsonDoc, tableCorrespondance);
+
+        // ── Filet de sécurité : numéro de police par motif regex ───────────
+        // Sur certains documents (carte rose surtout), le texte extrait par
+        // pdf-parse est tellement désordonné que l'IA rate le numéro de
+        // police alors qu'il est bien présent dans le texte envoyé. On le
+        // retrouve ici indépendamment de l'IA, uniquement si elle ne l'a pas
+        // donné, pour ne jamais écraser une valeur déjà correcte.
+        if (!jsonRestaure.num_police || !jsonRestaure.code_bureau) {
+          const policeDetectee = pdfService.extrairePoliceParPattern(texteBrut);
+          if (policeDetectee) {
+            console.log(`[Scanner] Police retrouvée par motif pour ${file.originalname} : ${policeDetectee.code_bureau}/${policeDetectee.num_police}`);
+            jsonRestaure.code_bureau = jsonRestaure.code_bureau || policeDetectee.code_bureau;
+            jsonRestaure.num_police  = jsonRestaure.num_police  || policeDetectee.num_police;
+          }
+        }
+
         jsonRestaure.nom_fichier = file.originalname;   // ← utilisés plus loin pour l'insertion en BDD
         jsonRestaure.taille_fichier = file.size;
         results.push(jsonRestaure);
@@ -127,6 +151,10 @@ async function scannerLotDossiers(req, res) {
 
     // ── Calcul des stats + agrégation par numéro de police ─────────────────
     const structurePolices = {};
+    // Documents sans num_police exploitable (ex: carte rose dont la mise en
+    // page ne fait pas apparaître clairement la police) : on les met de côté
+    // pour tenter un rattachement de secours après la première passe.
+    const orphelins = [];
 
     documentsAnalyses.forEach((doc) => {
       // Stats par type
@@ -136,9 +164,13 @@ async function scannerLotDossiers(req, res) {
       else if (type.includes("carte") || type.includes("rose")) stats.cartes_roses++;
       else if (type.includes("attestation"))                     stats.attestations++;
 
+      if (!doc.num_police || doc.num_police === "-") {
+        orphelins.push(doc);
+        return;
+      }
+
       // Clé de regroupement par police
       const codePolice = `${doc.code_bureau || ""}-${doc.num_police || ""}`;
-      if (!doc.num_police || doc.num_police === "-") return;
 
       if (!structurePolices[codePolice]) {
         // Première entrée pour cette police
@@ -163,8 +195,30 @@ async function scannerLotDossiers(req, res) {
         if (entry.vehicule           === "-" && (doc.marque || doc.modele)) {
           entry.vehicule = `${doc.marque || ""} ${doc.modele || ""}`.trim();
         }
+        if (entry.nom_conducteur === "-" && doc.nom_conducteur) entry.nom_conducteur = doc.nom_conducteur;
         if (entry.prime_nette === "0" && doc.prime_nette) entry.prime_nette = doc.prime_nette;
       }
+    });
+
+    // ── Rattachement de secours des orphelins par nom d'assuré ─────────────
+    // Cas typique : une carte rose ou attestation dont l'IA n'a pas pu lire
+    // le numéro de police sur le document, mais dont le nom de l'assuré
+    // correspond bien à celui d'un contrat déjà placé dans structurePolices.
+    orphelins.forEach((doc) => {
+      if (!doc.nom_assure) return;
+
+      const entree = Object.values(structurePolices).find((e) =>
+        nomsCorrespondent(e.nom_client, doc.nom_assure)
+      );
+      if (!entree) return;
+
+      if (entree.numero_carte_rose  === "-" && doc.num_carte_rose)  entree.numero_carte_rose  = doc.num_carte_rose;
+      if (entree.numero_attestation === "-" && doc.num_attestation) entree.numero_attestation = doc.num_attestation;
+      if (entree.vehicule           === "-" && (doc.marque || doc.modele)) {
+        entree.vehicule = `${doc.marque || ""} ${doc.modele || ""}`.trim();
+      }
+      if (entree.nom_conducteur === "-" && doc.nom_conducteur) entree.nom_conducteur = doc.nom_conducteur;
+      if (entree.prime_nette === "0" && doc.prime_nette) entree.prime_nette = doc.prime_nette;
     });
 
     return res.status(200).json({
