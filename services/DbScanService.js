@@ -1,31 +1,31 @@
 // services/dbScanService.js
-const pool = require('../config/db');
+const pool = require("../config/db");
 
 // ─── Utilitaires ─────────────────────────────────────────────────────────────
 
 function normaliserType(type) {
-  if (!type) return 'autre';
+  if (!type) return "autre";
   const t = type.toLowerCase().trim();
-  if (t.includes('contrat'))                             return 'contrat';
-  if (t.includes('carte') || t.includes('rose'))         return 'carte rose';
-  if (t.includes('attestation'))                         return 'attestation';
-  if (t.includes('recette'))                             return 'état de recettes';
-  return 'autre';
+  if (t.includes("contrat")) return "contrat";
+  if (t.includes("carte") || t.includes("rose")) return "carte rose";
+  if (t.includes("attestation")) return "attestation";
+  if (t.includes("recette")) return "état de recettes";
+  return "autre";
 }
 
 function separerPolice(codeBureau, numPolice) {
-  if (!numPolice) return { code: codeBureau || '-', police: '-' };
+  if (!numPolice) return { code: codeBureau || "-", police: "-" };
 
   // Format "2012/1001004139"
-  if (numPolice.includes('/')) {
-    const parts = numPolice.split('/');
+  if (numPolice.includes("/")) {
+    const parts = numPolice.split("/");
     const police = parts[1]?.trim().split(/[-\s]/)[0] || parts[1]?.trim();
     return { code: parts[0].trim(), police };
   }
 
   // Format "3016-1001000489" ou "3016 - 1001000489"
-  if (numPolice.includes('-')) {
-    const parts = numPolice.split('-');
+  if (numPolice.includes("-")) {
+    const parts = numPolice.split("-");
     const codePart = parts[0].trim();
     const policePart = parts[1]?.trim().split(/[\/\s]/)[0] || parts[1]?.trim();
     if (/^\d{4}$/.test(codePart)) {
@@ -33,7 +33,7 @@ function separerPolice(codeBureau, numPolice) {
     }
   }
 
-  return { code: codeBureau || '-', police: numPolice };
+  return { code: codeBureau || "-", police: numPolice };
 }
 
 // Rattachement de secours quand l'IA n'a pas réussi à extraire le numéro de
@@ -42,7 +42,7 @@ function separerPolice(codeBureau, numPolice) {
 // le nom de l'assuré, normalisé (casse, espaces).
 function nomsCorrespondent(nomA, nomB) {
   if (!nomA || !nomB) return false;
-  const normaliser = (s) => s.toLowerCase().trim().replace(/\s+/g, ' ');
+  const normaliser = (s) => s.toLowerCase().trim().replace(/\s+/g, " ");
   return normaliser(nomA) === normaliser(nomB);
 }
 
@@ -57,12 +57,14 @@ async function recupererFichiersExistants(fichiers) {
   const valides = (fichiers || []).filter((f) => f && f.nom);
   if (valides.length === 0) return new Set();
 
-  const conditions = valides.map(() => '(nom_fichier = ? AND taille_fichier = ?)').join(' OR ');
+  const conditions = valides
+    .map(() => "(nom_fichier = ? AND taille_fichier = ?)")
+    .join(" OR ");
   const valeurs = valides.flatMap((f) => [f.nom, f.taille]);
 
   const [rows] = await pool.query(
     `SELECT nom_fichier, taille_fichier FROM document WHERE ${conditions}`,
-    valeurs
+    valeurs,
   );
   return new Set(rows.map((r) => `${r.nom_fichier}::${r.taille_fichier}`));
 }
@@ -75,25 +77,34 @@ async function insererCarteRose(conn, donnees, idEmploye) {
 
   const [exist] = await conn.query(
     `SELECT id_document FROM carte_rose WHERE num_carte_rose = ?`,
-    [numCR]
+    [numCR],
   );
   if (exist.length > 0) {
-    console.log(`[dbScanService] Carte rose ${numCR} déjà en BDD, id=${exist[0].id_document}`);
+    console.log(
+      `[dbScanService] Carte rose ${numCR} déjà en BDD, id=${exist[0].id_document}`,
+    );
     return exist[0].id_document;
   }
 
   const [doc] = await conn.query(
     `INSERT INTO document (libelle, nom_fichier, taille_fichier, id_employe) VALUES (?, ?, ?, ?)`,
-    ['carte rose', donnees.nom_fichier || null, donnees.taille_fichier || null, idEmploye]
+    [
+      "carte rose",
+      donnees.nom_fichier || null,
+      donnees.taille_fichier || null,
+      idEmploye,
+    ],
   );
   const idDocument = doc.insertId;
 
   await conn.query(
     `INSERT INTO carte_rose (id_document, num_carte_rose) VALUES (?, ?)`,
-    [idDocument, numCR]
+    [idDocument, numCR],
   );
 
-  console.log(`[dbScanService] ✅ Carte rose ${numCR} insérée, id=${idDocument}`);
+  console.log(
+    `[dbScanService] ✅ Carte rose ${numCR} insérée, id=${idDocument}`,
+  );
   return idDocument;
 }
 
@@ -105,73 +116,83 @@ async function insererAttestation(conn, donnees, idEmploye) {
 
   const [exist] = await conn.query(
     `SELECT id_document FROM attestation WHERE num_attestation = ?`,
-    [numAtt]
+    [numAtt],
   );
   if (exist.length > 0) {
-    console.log(`[dbScanService] Attestation ${numAtt} déjà en BDD, id=${exist[0].id_document}`);
+    console.log(
+      `[dbScanService] Attestation ${numAtt} déjà en BDD, id=${exist[0].id_document}`,
+    );
     return exist[0].id_document;
   }
 
   const [doc] = await conn.query(
     `INSERT INTO document (libelle, nom_fichier, taille_fichier, id_employe) VALUES (?, ?, ?, ?)`,
-    ['attestation', donnees.nom_fichier || null, donnees.taille_fichier || null, idEmploye]
+    [
+      "attestation",
+      donnees.nom_fichier || null,
+      donnees.taille_fichier || null,
+      idEmploye,
+    ],
   );
   const idDocument = doc.insertId;
 
   await conn.query(
     `INSERT INTO attestation (id_document, num_attestation) VALUES (?, ?)`,
-    [idDocument, numAtt]
+    [idDocument, numAtt],
   );
 
-  console.log(`[dbScanService] ✅ Attestation ${numAtt} insérée, id=${idDocument}`);
+  console.log(
+    `[dbScanService] ✅ Attestation ${numAtt} insérée, id=${idDocument}`,
+  );
   return idDocument;
 }
 
 // ─── Insertion assuré + véhicule ─────────────────────────────────────────────
 
 async function insererOuRecupererVehicule(conn, donnees) {
-  const nomAssure = donnees.nom_assure || 'INCONNU';
+  const nomAssure = donnees.nom_assure || "INCONNU";
 
   let idAssure;
   const [assureExist] = await conn.query(
     `SELECT id_assure FROM assure WHERE nom = ? AND (prenom <=> ? OR prenom IS NULL)`,
-    [nomAssure, donnees.prenom_assure || null]
+    [nomAssure, donnees.prenom_assure || null],
   );
   if (assureExist.length > 0) {
     idAssure = assureExist[0].id_assure;
   } else {
     const [r] = await conn.query(
       `INSERT INTO assure (nom, prenom) VALUES (?, ?)`,
-      [nomAssure, donnees.prenom_assure || null]
+      [nomAssure, donnees.prenom_assure || null],
     );
     idAssure = r.insertId;
   }
 
-  if (!donnees.immatriculation) throw new Error("Immatriculation manquante pour le contrat");
+  if (!donnees.immatriculation)
+    throw new Error("Immatriculation manquante pour le contrat");
 
   const [vExist] = await conn.query(
     `SELECT id_vehicule FROM vehicule WHERE immatriculation = ?`,
-    [donnees.immatriculation]
+    [donnees.immatriculation],
   );
   if (vExist.length > 0) return vExist[0].id_vehicule;
 
-  const chassis = donnees.numero_chassis || ('INCONNU-' + Date.now());
+  const chassis = donnees.numero_chassis || "INCONNU-" + Date.now();
   const [vr] = await conn.query(
     `INSERT INTO vehicule
       (categorie, marque, modele, nb_place, numero_chassis, immatriculation,
        nom_conducteur, prenom_conducteur, id_assure)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      'CAT 2',
-      donnees.marque        || '-',
-      donnees.modele        || '-',
+      "CAT 2",
+      donnees.marque || "-",
+      donnees.modele || "-",
       2,
       chassis,
       donnees.immatriculation,
-      donnees.nom_conducteur    || null,
+      donnees.nom_conducteur || null,
       donnees.prenom_conducteur || null,
-      idAssure
-    ]
+      idAssure,
+    ],
   );
   return vr.insertId;
 }
@@ -184,15 +205,23 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
     await conn.beginTransaction();
 
     // 1. Séparer par type
-    const contrats     = documentsAnalyses.filter(d => normaliserType(d.type_document) === 'contrat');
-    const cartesRoses  = documentsAnalyses.filter(d => normaliserType(d.type_document) === 'carte rose');
-    const attestations = documentsAnalyses.filter(d => normaliserType(d.type_document) === 'attestation');
+    const contrats = documentsAnalyses.filter(
+      (d) => normaliserType(d.type_document) === "contrat",
+    );
+    const cartesRoses = documentsAnalyses.filter(
+      (d) => normaliserType(d.type_document) === "carte rose",
+    );
+    const attestations = documentsAnalyses.filter(
+      (d) => normaliserType(d.type_document) === "attestation",
+    );
 
-    console.log(`[dbScanService] Reçu: ${contrats.length} contrat(s), ${cartesRoses.length} carte(s) rose, ${attestations.length} attestation(s)`);
+    console.log(
+      `[dbScanService] Reçu: ${contrats.length} contrat(s), ${cartesRoses.length} carte(s) rose, ${attestations.length} attestation(s)`,
+    );
 
     // 2. Insérer carte rose et attestation en premier
     //    On stocke { doc, idDocument } pour retrouver par police ensuite
-    const idsCartesRoses  = [];
+    const idsCartesRoses = [];
     const idsAttestations = [];
 
     for (const cr of cartesRoses) {
@@ -215,34 +244,53 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
 
     // 3. Insérer chaque contrat
     for (const contrat of contrats) {
-      const { code, police } = separerPolice(contrat.code_bureau, contrat.num_police);
+      const { code, police } = separerPolice(
+        contrat.code_bureau,
+        contrat.num_police,
+      );
 
       // Rattachement par numéro de police (priorité), puis par immatriculation,
       // puis en dernier recours par nom d'assuré — utile quand l'IA n'a pas
       // réussi à extraire ni la police ni l'immatriculation sur la carte rose
       // ou l'attestation (ex: mise en page du document sans police visible).
-      let idCarteRose = idsCartesRoses.find(cr => {
-        const p = separerPolice(cr.doc.code_bureau, cr.doc.num_police);
-        return p.code === code && p.police === police;
-      })?.idDocument
-        || idsCartesRoses.find(cr => cr.doc.immatriculation && cr.doc.immatriculation === contrat.immatriculation)?.idDocument
-        || idsCartesRoses.find(cr => nomsCorrespondent(cr.doc.nom_assure, contrat.nom_assure))?.idDocument
-        || null;
+      let idCarteRose =
+        idsCartesRoses.find((cr) => {
+          const p = separerPolice(cr.doc.code_bureau, cr.doc.num_police);
+          return p.code === code && p.police === police;
+        })?.idDocument ||
+        idsCartesRoses.find(
+          (cr) =>
+            cr.doc.immatriculation &&
+            cr.doc.immatriculation === contrat.immatriculation,
+        )?.idDocument ||
+        idsCartesRoses.find((cr) =>
+          nomsCorrespondent(cr.doc.nom_assure, contrat.nom_assure),
+        )?.idDocument ||
+        null;
 
-      let idAttestation = idsAttestations.find(att => {
-        const p = separerPolice(att.doc.code_bureau, att.doc.num_police);
-        return p.code === code && p.police === police;
-      })?.idDocument
-        || idsAttestations.find(att => att.doc.immatriculation && att.doc.immatriculation === contrat.immatriculation)?.idDocument
-        || idsAttestations.find(att => nomsCorrespondent(att.doc.nom_assure, contrat.nom_assure))?.idDocument
-        || null;
+      let idAttestation =
+        idsAttestations.find((att) => {
+          const p = separerPolice(att.doc.code_bureau, att.doc.num_police);
+          return p.code === code && p.police === police;
+        })?.idDocument ||
+        idsAttestations.find(
+          (att) =>
+            att.doc.immatriculation &&
+            att.doc.immatriculation === contrat.immatriculation,
+        )?.idDocument ||
+        idsAttestations.find((att) =>
+          nomsCorrespondent(att.doc.nom_assure, contrat.nom_assure),
+        )?.idDocument ||
+        null;
 
-      console.log(`[dbScanService] Contrat ${code}/${police} | immat: ${contrat.immatriculation} | CR: ${idCarteRose} | ATT: ${idAttestation}`);
+      console.log(
+        `[dbScanService] Contrat ${code}/${police} | immat: ${contrat.immatriculation} | CR: ${idCarteRose} | ATT: ${idAttestation}`,
+      );
 
       // Contrat existant → mise à jour des FK manquantes
       const [contratExist] = await conn.query(
         `SELECT id_document FROM contrat WHERE code_bureau = ? AND num_police = ?`,
-        [code, police]
+        [code, police],
       );
 
       if (contratExist.length > 0) {
@@ -252,9 +300,11 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
            SET id_carte_rose  = COALESCE(id_carte_rose, ?),
                id_attestation = COALESCE(id_attestation, ?)
            WHERE id_document = ?`,
-          [idCarteRose, idAttestation, idContrat]
+          [idCarteRose, idAttestation, idContrat],
         );
-        console.log(`[dbScanService] 🔄 Contrat ${code}/${police} mis à jour (FK carte rose + attestation)`);
+        console.log(
+          `[dbScanService] 🔄 Contrat ${code}/${police} mis à jour (FK carte rose + attestation)`,
+        );
         continue;
       }
 
@@ -263,7 +313,12 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
 
       const [docResult] = await conn.query(
         `INSERT INTO document (libelle, nom_fichier, taille_fichier, id_employe) VALUES (?, ?, ?, ?)`,
-        ['contrat', contrat.nom_fichier || null, contrat.taille_fichier || null, idEmploye]
+        [
+          "contrat",
+          contrat.nom_fichier || null,
+          contrat.taille_fichier || null,
+          idEmploye,
+        ],
       );
       const idDocument = docResult.insertId;
 
@@ -273,16 +328,18 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
            duree, statut_validation, id_vehicule, id_carte_rose, id_attestation)
          VALUES (?, ?, ?, ?, ?, ?, 12, 'Brouillon', ?, ?, ?)`,
         [
-          idDocument, code, police,
+          idDocument,
+          code,
+          police,
           // Si date_emission n'a pas été extraite (carte rose/attestation, ou texte coupé),
           // on retombe sur date_effet pour ne pas casser le filtre de la page production.
           contrat.date_emission || contrat.date_effet || null,
-          contrat.date_effet    || null,
+          contrat.date_effet || null,
           contrat.date_echeance || null,
           idVehicule,
-          idCarteRose   || null,
-          idAttestation || null
-        ]
+          idCarteRose || null,
+          idAttestation || null,
+        ],
       );
 
       await conn.query(
@@ -290,20 +347,20 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
           (prime_nette, accessoires, dta, carte_rose, fc_automobile, tva, prime_totale, id_document)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          contrat.prime_nette        || 0,
-          contrat.accessoires        || 0,
-          contrat.dta                || 0,
+          contrat.prime_nette || 0,
+          contrat.accessoires || 0,
+          contrat.dta || 0,
           contrat.carte_rose_montant || 0,
-          contrat.fc_automobile      || 0,
-          contrat.tva                || 0,
-          contrat.prime_totale       || 0,
-          idDocument
-        ]
+          contrat.fc_automobile || 0,
+          contrat.tva || 0,
+          contrat.prime_totale || 0,
+          idDocument,
+        ],
       );
 
       await conn.query(
         `INSERT INTO reductions_majorations (bonus, id_document) VALUES (?, ?)`,
-        [contrat.bonus || 0, idDocument]
+        [contrat.bonus || 0, idDocument],
       );
 
       // Garanties (Responsabilité Civile, Défense et Recours, etc.) — juste les noms, sans montants
@@ -312,20 +369,21 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
           if (!libelle) continue; // libelle est NOT NULL en BDD, on ignore les entrées vides
           await conn.query(
             `INSERT INTO garantie (id_document, libelle, prime_periode) VALUES (?, ?, ?)`,
-            [idDocument, libelle, 0]
+            [idDocument, libelle, 0],
           );
         }
       }
 
-      console.log(`[dbScanService] ✅ Contrat ${code}/${police} inséré avec id=${idDocument}`);
+      console.log(
+        `[dbScanService] ✅ Contrat ${code}/${police} inséré avec id=${idDocument}`,
+      );
     }
 
     await conn.commit();
     console.log(`[dbScanService] ✅ Lot sauvegardé avec succès.`);
-
   } catch (error) {
     await conn.rollback();
-    console.error('[dbScanService] Erreur globale, rollback :', error.message);
+    console.error("[dbScanService] Erreur globale, rollback :", error.message);
     throw error;
   } finally {
     conn.release();
