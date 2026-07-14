@@ -109,4 +109,46 @@ async function afficherMesNotifications(req, res) {
   }
 }
 
-module.exports = { afficherMesContrats, afficherMesNotifications };
+// GET /api/contrats/details/:id
+async function afficherDetailsMonContrat(req, res) {
+  try {
+    const idDocument = parseInt(req.params.id, 10);
+
+    if (!idDocument || Number.isNaN(idDocument)) {
+      return res.status(400).json({ success: false, message: "Identifiant de contrat invalide." });
+    }
+
+    // Comme pour afficherMesContrats / afficherMesNotifications : le client
+    // connecté est identifié via req.user.id (JWT), jamais via une valeur
+    // envoyée par le client.
+    const [clientRows] = await pool.query(
+      `SELECT nom, prenom FROM client WHERE id_utilisateur = ?`,
+      [req.user.id]
+    );
+
+    if (clientRows.length === 0) {
+      return res.status(404).json({ success: false, message: "Client introuvable." });
+    }
+
+    const { nom, prenom } = clientRows[0];
+    const contrat = await contratClientService.getDetailsContratClient(idDocument, nom, prenom);
+
+    if (!contrat) {
+      // Le contrat n'existe pas OU n'appartient pas à ce client : dans les
+      // deux cas on répond 404, pour ne jamais révéler l'existence du
+      // contrat d'un autre client.
+      return res.status(404).json({ success: false, message: "Contrat introuvable." });
+    }
+
+    return res.status(200).json({ success: true, contrat });
+
+  } catch (error) {
+    console.error('Erreur afficherDetailsMonContrat :', error);
+    return res.status(500).json({
+      success: false,
+      message: "Erreur serveur lors de la récupération des détails du contrat.",
+    });
+  }
+}
+
+module.exports = { afficherMesContrats, afficherMesNotifications, afficherDetailsMonContrat };

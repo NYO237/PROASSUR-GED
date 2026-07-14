@@ -96,4 +96,82 @@ async function getAlertesContratsClient(nomClient, prenomClient) {
   return rows;
 }
 
-module.exports = { getContratsClient, getAlertesContratsClient };
+/**
+ * Récupère les détails complets d'un contrat précis (véhicule, dates,
+ * garanties, prime...) pour l'affichage dans la modal de détails côté
+ * client (accueil.html).
+ *
+ * Sécurité : contrairement à contratsEmployeService.obtenirDetailsContrat
+ * (qui ne filtre que par id_document, l'employé pouvant consulter
+ * n'importe quel contrat), ici on exige EN PLUS que le contrat appartienne
+ * bel et bien au client connecté (même filtre nom+prénom que
+ * getContratsClient). Si l'id_document correspond à un contrat d'un autre
+ * client, la requête ne renvoie rien : un client ne peut donc jamais
+ * consulter les détails du contrat d'un tiers, même en devinant un id.
+ */
+async function getDetailsContratClient(idDocument, nomClient, prenomClient) {
+  const nomComplet = `${nomClient || ''} ${prenomClient || ''}`
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const [contratRows] = await pool.query(
+    `SELECT
+        c.id_document        AS id_document,
+        c.code_bureau        AS code_bureau,
+        c.adresse_bureau     AS adresse_bureau,
+        c.num_police         AS num_police,
+        c.date_emission      AS date_emission,
+        c.date_effet         AS date_effet,
+        c.date_echeance      AS date_echeance,
+        c.duree              AS duree,
+        c.type_contrat       AS type_contrat,
+        CASE
+          WHEN CURDATE() < c.date_effet THEN 'en_attente_effet'
+          WHEN CURDATE() > c.date_echeance THEN 'expire'
+          ELSE 'en_cours'
+        END AS statut_calcule,
+        cr.num_carte_rose    AS num_carte_rose,
+        v.categorie          AS vehicule_categorie,
+        v.marque             AS marque,
+        v.modele             AS modele,
+        v.immatriculation    AS immatriculation,
+        v.numero_chassis     AS numero_chassis,
+        v.nom_conducteur     AS nom_conducteur,
+        v.prenom_conducteur  AS prenom_conducteur,
+        p.prime_nette        AS prime_nette,
+        p.accessoires        AS accessoires,
+        p.dta                AS dta,
+        p.prime_totale       AS prime_totale
+     FROM contrat c
+     JOIN vehicule v          ON v.id_vehicule = c.id_vehicule
+     JOIN assure a            ON a.id_assure = v.id_assure
+     LEFT JOIN carte_rose cr  ON cr.id_document = c.id_carte_rose
+     LEFT JOIN prime p        ON p.id_document = c.id_document
+     WHERE c.id_document = ?
+       AND TRIM(LOWER(a.nom)) = TRIM(LOWER(?))`,
+    [idDocument, nomComplet]
+  );
+
+  if (contratRows.length === 0) {
+    return null;
+  }
+
+  const [garanties] = await pool.query(
+    `SELECT
+        libelle          AS libelle,
+        capital           AS capital,
+        franchise_limite  AS franchise_limite,
+        prime_periode     AS prime_periode
+     FROM garantie
+     WHERE id_document = ?
+     ORDER BY id_garantie ASC`,
+    [idDocument]
+  );
+
+  return {
+    ...contratRows[0],
+    garanties,
+  };
+}
+
+module.exports = { getContratsClient, getAlertesContratsClient, getDetailsContratClient };

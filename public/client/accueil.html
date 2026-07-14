@@ -252,6 +252,18 @@
         .table tbody tr:hover {
             background-color: #f8fafc;
         }
+        .contrat-row {
+            cursor: pointer;
+        }
+        .contrat-row:focus-visible {
+            outline: 2px solid var(--bleu-secondary);
+            outline-offset: -2px;
+        }
+
+        /* --- MODAL DETAILS CONTRAT --- */
+        #modalDetailsContrat .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
 
         /* Icône cloche du topbar (lien vers les notifications) */
         .icone-cloche {
@@ -448,8 +460,29 @@
                     </div>
                 </div>
 
-           
-            
+            </div>
+
+            <!-- MODAL : DETAILS D'UN CONTRAT -->
+            <div class="modal fade" id="modalDetailsContrat" tabindex="-1" aria-labelledby="modalDetailsContratLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content rounded-4 border-0">
+                        <div class="modal-header text-white" style="background-color: var(--bleu-primary);">
+                            <h5 class="modal-title fw-bold" id="modalDetailsContratLabel">
+                                <i class="fa-solid fa-file-contract me-2"></i>Détails du contrat
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="text-center py-5" id="modal-details-loading">
+                                <div class="spinner-border text-primary" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Chargement des détails...</p>
+                            </div>
+                            <div id="modal-details-contenu" class="d-none"></div>
+                            <div id="modal-details-erreur" class="alert alert-danger d-none mb-0"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </main>
     </div>
