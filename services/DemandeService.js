@@ -5,11 +5,28 @@ const pool = require('../config/db');
 // tapés librement par le client via le champ "autre" sont, eux, personnalisés).
 const GARANTIES_PAR_DEFAUT = ['Défense et Recours', 'Aide à la Réparation'];
 
+// Calcule la date/heure locale du Cameroun (Afrique/Douala = UTC+1 toute
+// l'année, pas d'heure d'été). On n'utilise plus CURDATE()/CURTIME() de
+// MySQL car ces fonctions renvoient l'heure du SERVEUR DE BASE DE DONNEES
+// (Aiven, en UTC par défaut), pas celle de l'utilisateur au Cameroun —
+// d'où le décalage d'1h observé (11h30 -> enregistré 10h30).
+function getDateHeureCameroun() {
+  const maintenant = new Date();
+  const localCameroun = new Date(maintenant.getTime() + 60 * 60 * 1000);
+
+  const date = localCameroun.toISOString().slice(0, 10); // YYYY-MM-DD
+  const heure = localCameroun.toISOString().slice(11, 19); // HH:MM:SS
+
+  return { date, heure };
+}
+
 async function createDemande({ idClient, urlCni, urlPermis, urlCarteGrise, dureeMois, garanties = [], vignettePayee = false }) {
+  const { date, heure } = getDateHeureCameroun();
+
   const [result] = await pool.query(
     `INSERT INTO demande_contrat (date_demande, heure_demande, statut_demande, url_cni, url_permis, url_carte_grise, duree_mois, vignette_payee, id_client)
-     VALUES (CURDATE(), CURTIME(), 'En attente', ?, ?, ?, ?, ?, ?)`,
-    [urlCni, urlPermis, urlCarteGrise, dureeMois, vignettePayee ? 1 : 0, idClient]
+     VALUES (?, ?, 'En attente', ?, ?, ?, ?, ?, ?)`,
+    [date, heure, urlCni, urlPermis, urlCarteGrise, dureeMois, vignettePayee ? 1 : 0, idClient]
   );
 
   const idDemande = result.insertId;
@@ -194,11 +211,11 @@ async function validerDemande({idDemande, idEmploye}){
 
 
 async function rejeterDemande({idDemande, motif, idEmploye}){
-
+  const { date, heure } = getDateHeureCameroun();
 
   const [result] = await pool.query(
-    "UPDATE demande_contrat SET statut_demande = ?, date_rejet = CURDATE(), heure_rejet = CURTIME(), motif_rejet = ?, id_employe = ? WHERE id_demande = ?",
-    ['rejete', motif, idEmploye, idDemande]
+    "UPDATE demande_contrat SET statut_demande = ?, date_rejet = ?, heure_rejet = ?, motif_rejet = ?, id_employe = ? WHERE id_demande = ?",
+    ['rejete', date, heure, motif, idEmploye, idDemande]
   );
   return result;
 }
