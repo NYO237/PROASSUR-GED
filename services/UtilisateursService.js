@@ -196,6 +196,108 @@ async function modifierUtilisateur(idUtilisateur, roleType, donnees) {
     return true;
 }
 
+// ─── Statistiques (modale de détails) ──────────────────────────────────────────
+// Comparaison des statuts insensible à la casse/accents (LIKE '%mot-clé%') car
+// on ne connaît pas ici l'orthographe exacte utilisée par le contrôleur des
+// demandes (ex: "En attente"/"en_attente", "Validée"/"validee"...).
+
+async function statistiquesClient(idUtilisateur) {
+    // Valeurs exactes confirmées dans DemandeService.js : 'En attente', 'valide', 'rejete'
+    // (comparaison insensible à la casse par précaution, mais plus de LIKE approximatif).
+    const [demandesRows] = await pool.query(
+        `SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN LOWER(statut_demande) = 'en attente' THEN 1 ELSE 0 END) AS en_attente,
+            SUM(CASE WHEN LOWER(statut_demande) = 'valide'     THEN 1 ELSE 0 END) AS validees,
+            SUM(CASE WHEN LOWER(statut_demande) = 'rejete'     THEN 1 ELSE 0 END) AS rejetees
+         FROM demande_contrat
+         WHERE id_client = ?`,
+        [idUtilisateur]
+    );
+
+    // Les contrats ne sont pas rattachés au client par une clé étrangère directe :
+    // on les retrouve en comparant "Nom Prénom" du client à celui de l'assuré du
+    // véhicule (contrat → vehicule → assure). On compare nom+prénom ensemble
+    // (ex: "NGOUOFO ANDRE"), pas le nom seul, pour éviter les faux positifs
+    // entre homonymes qui n'ont que le nom de famille en commun.
+    const [clientRows] = await pool.query(
+        "SELECT nom, prenom FROM client WHERE id_utilisateur = ?",
+        [idUtilisateur]
+    );
+    const client = clientRows[0];
+    // filter(Boolean) ignore un prénom absent plutôt que de laisser un espace
+    // en trop (même logique que CONCAT_WS côté SQL, pour rester symétrique).
+    const nomCompletClient = client
+        ? [client.nom, client.prenom].filter(Boolean).join(' ').trim()
+        : null;
+
+    let contrats = { valides: 0, en_attente_effet: 0, expires: 0 };
+    if (nomCompletClient) {
+        const [contratsRows] = await pool.query(
+            `SELECT
+                SUM(CASE WHEN c.date_effet <= CURDATE() AND c.date_echeance >= CURDATE() THEN 1 ELSE 0 END) AS valides,
+                SUM(CASE WHEN c.date_effet > CURDATE()                                    THEN 1 ELSE 0 END) AS en_attente_effet,
+                SUM(CASE WHEN c.date_echeance < CURDATE()                                 THEN 1 ELSE 0 END) AS expires
+             FROM contrat c
+             JOIN vehicule v ON v.id_vehicule = c.id_vehicule
+             JOIN assure a   ON a.id_assure   = v.id_assure
+             WHERE LOWER(TRIM(CONCAT_WS(' ', a.nom, a.prenom))) = LOWER(TRIM(?))`,
+            [nomCompletClient]
+        );
+        if (contratsRows[0]) {
+            contrats = {
+                valides: Number(contratsRows[0].valides) || 0,
+                en_attente_effet: Number(contratsRows[0].en_attente_effet) || 0,
+                expires: Number(contratsRows[0].expires) || 0,
+            };
+        }
+    }
+
+    const d = demandesRows[0] || {};
+    return {
+        demandes: {
+            total: Number(d.total) || 0,
+            en_attente: Number(d.en_attente) || 0,
+            validees: Number(d.validees) || 0,
+            rejetees: Number(d.rejetees) || 0,
+        },
+        contrats,
+    };
+}
+
+async function statistiquesEmploye(idUtilisateur) {
+    // document.id_employe = employé qui a scanné/importé ; contrat partage la
+    // même clé primaire que document (id_document), d'où le LEFT JOIN pour
+    // distinguer "documents scannés" de "dont contrats".
+    const [documentsRows] = await pool.query(
+        `SELECT
+            COUNT(*) AS documents_scannes,
+            SUM(CASE WHEN c.id_document IS NOT NULL THEN 1 ELSE 0 END) AS contrats_scannes
+         FROM document d
+         LEFT JOIN contrat c ON c.id_document = d.id_document
+         WHERE d.id_employe = ?`,
+        [idUtilisateur]
+    );
+
+    const [demandesRows] = await pool.query(
+        `SELECT
+            SUM(CASE WHEN LOWER(statut_demande) = 'valide' THEN 1 ELSE 0 END) AS validees,
+            SUM(CASE WHEN LOWER(statut_demande) = 'rejete' THEN 1 ELSE 0 END) AS rejetees
+         FROM demande_contrat
+         WHERE id_employe = ?`,
+        [idUtilisateur]
+    );
+
+    const doc = documentsRows[0] || {};
+    const dem = demandesRows[0] || {};
+    return {
+        documents_scannes: Number(doc.documents_scannes) || 0,
+        contrats_scannes: Number(doc.contrats_scannes) || 0,
+        demandes_validees: Number(dem.validees) || 0,
+        demandes_rejetees: Number(dem.rejetees) || 0,
+    };
+}
+
 module.exports = {
     afficherClients,
     afficherEmployes,
@@ -203,4 +305,6 @@ module.exports = {
     basculerStatus,
     modifierUtilisateur,
     creerUtilisateur,
+    statistiquesClient,
+    statistiquesEmploye,
 };

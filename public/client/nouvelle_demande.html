@@ -325,6 +325,40 @@
                             </select>
                         </div>
 
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">5. Garanties souhaitées <span class="text-secondary">(Optionnel)</span></label>
+                            <div class="p-3 border rounded bg-light">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="garanties" value="Défense et Recours" id="garantie-defense-recours">
+                                    <label class="form-check-label" for="garantie-defense-recours">
+                                        Défense et Recours
+                                    </label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" name="garanties" value="Aide à la Réparation" id="garantie-aide-reparation">
+                                    <label class="form-check-label" for="garantie-aide-reparation">
+                                        Aide à la Réparation
+                                    </label>
+                                </div>
+                                <label for="input-autre-garantie" class="form-label small fw-semibold mb-1 text-secondary">
+                                    Une autre garantie ne figure pas dans la liste ?
+                                </label>
+                                <input type="text" id="input-autre-garantie" name="autre_garantie" class="form-control" placeholder="Précisez ici (ex : Bris de glace)" maxlength="150">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check p-3 border rounded bg-light">
+                                <input class="form-check-input" type="checkbox" name="vignette_payee" value="oui" id="input-vignette-payee">
+                                <label class="form-check-label fw-bold" for="input-vignette-payee">
+                                    Vignette payée
+                                </label>
+                                <div class="small text-secondary mt-1">
+                                    Cochez cette case si vous avez déjà payé votre vignette automobile, ici ou ailleurs.
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="button" class="btn btn-primary w-100 py-2.5 fw-bold shadow-sm mt-3" id="btn-soumettre">
                             <i class="fa-solid fa-paper-plane me-2"></i> Soumettre mon dossier d'assurance
                         </button>

@@ -19,26 +19,32 @@
  *     (Client / Employé / Chef d'agence) de la personne connectée.
  */
 (function () {
-  const PUBLIC_PATHS = ['/', '/login', '/register'];
+  const PUBLIC_PATHS = ["/", "/login", "/register"];
 
   // Pages réservées aux clients
-  const CLIENT_PATHS = ['/accueil', '/nouvelle_demande', '/suivi_demandes', '/profil', '/mes_notifications'];
+  const CLIENT_PATHS = [
+    "/accueil",
+    "/nouvelle_demande",
+    "/suivi_demandes",
+    "/profil",
+    "/mes_notifications",
+  ];
 
   // Pages réservées aux employés (y compris chefs d'agence)
   const EMPLOYE_PATHS = [
-    '/demandes_recues',
-    '/scanner_dossier',
-    '/etat_production',
-    '/etat_recettes',
-    '/statistiques',
-    '/contrats',
-    '/utilisateurs',
-    '/profil_proassur',
-    '/notifications',
+    "/demandes_recues",
+    "/scanner_dossier",
+    "/etat_production",
+    "/etat_recettes",
+    "/statistiques",
+    "/contrats",
+    "/utilisateurs",
+    "/profil_proassur",
+    "/notifications",
   ];
 
   // Parmi les pages employé, celles réservées en plus aux chefs d'agence
-  const CHEF_AGENCE_ONLY_PATHS = ['/utilisateurs'];
+  const CHEF_AGENCE_ONLY_PATHS = ["/utilisateurs", "/statistiques"];
 
   const currentPath = window.location.pathname;
   if (PUBLIC_PATHS.includes(currentPath)) {
@@ -48,14 +54,15 @@
   // Règle injectée tout de suite (avant le rendu du <body>) pour masquer sans
   // flash les éléments réservés aux chefs d'agence (ex: le lien "Utilisateurs"
   // dans la sidebar) tant qu'on ne sait pas encore si la personne l'est.
-  const styleMasquage = document.createElement('style');
-  styleMasquage.textContent = '.masquer-non-chef-agence .chef-agence-only { display: none !important; }';
+  const styleMasquage = document.createElement("style");
+  styleMasquage.textContent =
+    ".masquer-non-chef-agence .chef-agence-only { display: none !important; }";
   document.head.appendChild(styleMasquage);
 
   function decodeToken(token) {
     try {
-      const payloadBase64 = token.split('.')[1];
-      const json = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+      const payloadBase64 = token.split(".")[1];
+      const json = atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/"));
       return JSON.parse(json);
     } catch (e) {
       return null;
@@ -63,17 +70,19 @@
   }
 
   function redirectToLogin() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.replace('/login');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.replace("/login");
   }
 
   // Renvoie chacun vers SON espace (pas vers /login) quand il n'a juste pas le droit
   function redirectVersEspacePersonnel(payload) {
-    window.location.replace(payload.role === 'employe' ? '/demandes_recues' : '/accueil');
+    window.location.replace(
+      payload.role === "employe" ? "/demandes_recues" : "/accueil",
+    );
   }
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
     redirectToLogin();
     return;
@@ -88,14 +97,14 @@
   }
 
   // ── Contrôle par rôle ────────────────────────────────────────────────────
-  const estEmploye = payload.role === 'employe';
-  const estClient = payload.role === 'client';
+  const estEmploye = payload.role === "employe";
+  const estClient = payload.role === "client";
   const estChefAgence = estEmploye && payload.estChefAgence === true;
 
   // Simple employé (pas chef d'agence) : on masque tout ce qui est marqué
   // .chef-agence-only dans la page (ex: le lien "Utilisateurs" de la sidebar)
   if (estEmploye && !estChefAgence) {
-    document.documentElement.classList.add('masquer-non-chef-agence');
+    document.documentElement.classList.add("masquer-non-chef-agence");
   }
 
   if (CLIENT_PATHS.includes(currentPath) && !estClient) {
@@ -117,20 +126,20 @@
   window.utilisateurConnecte = payload;
 
   // ── Mise à jour du badge "STATUT" et du message de bienvenue ────────────
-  document.addEventListener('DOMContentLoaded', function () {
-    const statutEl = document.getElementById('badge-statut-utilisateur');
+  document.addEventListener("DOMContentLoaded", function () {
+    const statutEl = document.getElementById("badge-statut-utilisateur");
     if (statutEl) {
-      let libelle = 'Client';
+      let libelle = "Client";
       if (estEmploye) {
-        libelle = estChefAgence ? "Chef d'agence" : 'Employé';
+        libelle = estChefAgence ? "Chef d'agence" : "Employé";
       }
       statutEl.textContent = libelle;
     }
 
-    const bienvenueEl = document.getElementById('message-bienvenue');
+    const bienvenueEl = document.getElementById("message-bienvenue");
     if (bienvenueEl) {
-      const civilite = payload.sexe === 'F' ? 'Mme' : 'M.';
-      const nom = payload.nom || '';
+      const civilite = payload.sexe === "F" ? "Mme" : "M.";
+      const nom = payload.nom || "";
       bienvenueEl.innerHTML = `Ravi de vous revoir, <strong>${civilite} ${nom}</strong> !`;
     }
   });

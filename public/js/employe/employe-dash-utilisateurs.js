@@ -44,7 +44,7 @@ function badgeRole(estChefAgence) {
 
 function ligneClientHTML(user) {
     return `
-    <tr>
+    <tr class="ligne-utilisateur-cliquable" onclick='ouvrirDetailsUtilisateur(${user.id_utilisateur}, "client", "${(user.nom + " " + (user.prenom || "")).trim().replace(/'/g, "&#39;")}")'>
         <td>${user.id_utilisateur}</td>
         <td>${user.nom}</td>
         <td>${user.prenom || ''}</td>
@@ -55,15 +55,15 @@ function ligneClientHTML(user) {
         <td><span class="badge bg-info bg-opacity-10 text-info px-2 py-1 rounded-pill">Client</span></td>
         <td>
             <button class='btn btn-sm btn-primary fw-semibold me-1'
-                onclick='ouvrirModaleModifier(${user.id_utilisateur}, "client", ${JSON.stringify(user).replace(/'/g, "&#39;")})'>
+                onclick='event.stopPropagation(); ouvrirModaleModifier(${user.id_utilisateur}, "client", ${JSON.stringify(user).replace(/'/g, "&#39;")})'>
                 Modifier
             </button>
             <button class='btn btn-sm ${classeBoutonSuspendre(user.status)} fw-semibold me-1'
-                onclick='ouvrirConfirmation("suspendre", ${user.id_utilisateur}, "${user.nom} ${user.prenom || ''}", "${user.status}")'>
+                onclick='event.stopPropagation(); ouvrirConfirmation("suspendre", ${user.id_utilisateur}, "${user.nom} ${user.prenom || ''}", "${user.status}")'>
                 ${libelleBoutonSuspendre(user.status)}
             </button>
             <button class='btn btn-sm btn-danger fw-semibold'
-                onclick='ouvrirConfirmation("supprimer", ${user.id_utilisateur}, "${user.nom} ${user.prenom || ''}")'>
+                onclick='event.stopPropagation(); ouvrirConfirmation("supprimer", ${user.id_utilisateur}, "${user.nom} ${user.prenom || ''}")'>
                 Supprimer
             </button>
         </td>
@@ -73,7 +73,7 @@ function ligneClientHTML(user) {
 
 function ligneEmployeHTML(user) {
     return `
-    <tr>
+    <tr class="ligne-utilisateur-cliquable" onclick='ouvrirDetailsUtilisateur(${user.id_utilisateur}, "employe", "${(user.nom + " " + (user.prenom || "")).trim().replace(/'/g, "&#39;")}")'>
         <td>${user.id_utilisateur}</td>
         <td>${user.nom}</td>
         <td>${user.prenom || ''}</td>
@@ -84,15 +84,15 @@ function ligneEmployeHTML(user) {
         <td>${badgeRole(!!Number(user.est_chef_agence))}</td>
         <td>
             <button class='btn btn-sm btn-primary fw-semibold me-1'
-                onclick='ouvrirModaleModifier(${user.id_utilisateur}, "employe", ${JSON.stringify(user).replace(/'/g, "&#39;")})'>
+                onclick='event.stopPropagation(); ouvrirModaleModifier(${user.id_utilisateur}, "employe", ${JSON.stringify(user).replace(/'/g, "&#39;")})'>
                 Modifier
             </button>
             <button class='btn btn-sm ${classeBoutonSuspendre(user.status)} fw-semibold me-1'
-                onclick='ouvrirConfirmation("suspendre", ${user.id_utilisateur}, "${user.nom} ${user.prenom || ''}", "${user.status}")'>
+                onclick='event.stopPropagation(); ouvrirConfirmation("suspendre", ${user.id_utilisateur}, "${user.nom} ${user.prenom || ''}", "${user.status}")'>
                 ${libelleBoutonSuspendre(user.status)}
             </button>
             <button class='btn btn-sm btn-danger fw-semibold'
-                onclick='ouvrirConfirmation("supprimer", ${user.id_utilisateur}, "${user.nom} ${user.prenom || ''}")'>
+                onclick='event.stopPropagation(); ouvrirConfirmation("supprimer", ${user.id_utilisateur}, "${user.nom} ${user.prenom || ''}")'>
                 Supprimer
             </button>
         </td>
@@ -166,6 +166,112 @@ async function afficherEmployes() {
     }
 }
 
+// ─── Compteurs Clients / Employés (badges sur les boutons de sélection) ──────
+// Réutilise les mêmes endpoints que l'affichage des tableaux, juste pour
+// connaître le nombre total de chaque type (indépendamment du filtre affiché).
+
+async function mettreAJourCompteurs() {
+    const badgeClients = document.getElementById('badge-total-clients');
+    const badgeEmployes = document.getElementById('badge-total-employes');
+
+    try {
+        const [reponseClients, reponseEmployes] = await Promise.all([
+            fetch('/api/utilisateurs/afficher_infos_clients', { method: 'GET', headers: getAuthHeaders() }),
+            fetch('/api/utilisateurs/afficher_infos_employes', { method: 'GET', headers: getAuthHeaders() }),
+        ]);
+        const [dataClients, dataEmployes] = await Promise.all([
+            reponseClients.json(),
+            reponseEmployes.json(),
+        ]);
+
+        if (badgeClients) badgeClients.textContent = dataClients.success ? dataClients.users.length : '–';
+        if (badgeEmployes) badgeEmployes.textContent = dataEmployes.success ? dataEmployes.users.length : '–';
+
+    } catch (error) {
+        console.log('Erreur lors du comptage des utilisateurs :', error);
+    }
+}
+
+// ─── Modale de détails (statistiques d'un utilisateur) ───────────────────────
+
+function statMiniCardHTML(valeur, libelle, couleur) {
+    return `
+        <div class="col-6 col-md-3">
+            <div class="stat-mini-card">
+                <div class="stat-valeur"${couleur ? ` style="color:${couleur};"` : ''}>${valeur}</div>
+                <div class="stat-libelle">${libelle}</div>
+            </div>
+        </div>
+    `;
+}
+
+function rendreStatsClientHTML(stats) {
+    return `
+        <div class="stat-section-titre"><i class="fa-solid fa-file-circle-question me-1"></i>Demandes de contrat</div>
+        <div class="row g-3 mb-4">
+            ${statMiniCardHTML(stats.demandes.total, 'Total')}
+            ${statMiniCardHTML(stats.demandes.en_attente, 'En attente', '#d97706')}
+            ${statMiniCardHTML(stats.demandes.validees, 'Validées', '#16a34a')}
+            ${statMiniCardHTML(stats.demandes.rejetees, 'Rejetées', 'var(--rouge-accent)')}
+        </div>
+        <div class="stat-section-titre"><i class="fa-solid fa-file-contract me-1"></i>Contrats (véhicules à son nom)</div>
+        <div class="row g-3">
+            ${statMiniCardHTML(stats.contrats.valides, 'Valides', '#16a34a')}
+            ${statMiniCardHTML(stats.contrats.en_attente_effet, "En attente d'effet", '#d97706')}
+            ${statMiniCardHTML(stats.contrats.expires, 'Expirés', 'var(--slate-500)')}
+        </div>
+    `;
+}
+
+function rendreStatsEmployeHTML(stats) {
+    return `
+        <div class="stat-section-titre"><i class="fa-solid fa-file-import me-1"></i>Activité de numérisation</div>
+        <div class="row g-3 mb-4">
+            ${statMiniCardHTML(stats.documents_scannes, 'Documents scannés')}
+            ${statMiniCardHTML(stats.contrats_scannes, 'Dont contrats')}
+        </div>
+        <div class="stat-section-titre"><i class="fa-solid fa-clipboard-check me-1"></i>Traitement des demandes</div>
+        <div class="row g-3">
+            ${statMiniCardHTML(stats.demandes_validees, 'Demandes validées', '#16a34a')}
+            ${statMiniCardHTML(stats.demandes_rejetees, 'Demandes rejetées', 'var(--rouge-accent)')}
+        </div>
+    `;
+}
+
+async function ouvrirDetailsUtilisateur(id, roleType, nomAffiche) {
+    document.getElementById('details-nom-utilisateur').textContent = nomAffiche;
+    document.getElementById('details-badge-role').textContent = roleType === 'client' ? 'Client' : 'Employé';
+
+    const chargement = document.getElementById('details-chargement');
+    const contenu = document.getElementById('details-contenu');
+    chargement.classList.remove('d-none');
+    contenu.classList.add('d-none');
+    contenu.innerHTML = '';
+
+    const modale = new bootstrap.Modal(document.getElementById('modaleDetailsUtilisateur'));
+    modale.show();
+
+    try {
+        const url = roleType === 'client'
+            ? `/api/utilisateurs/stats_client/${id}`
+            : `/api/utilisateurs/stats_employe/${id}`;
+
+        const response = await fetch(url, { method: 'GET', headers: getAuthHeaders() });
+        const data = await response.json();
+
+        contenu.innerHTML = !data.success
+            ? `<p class="text-danger text-center py-4 mb-0">${data.message || "Impossible de charger les statistiques."}</p>`
+            : (roleType === 'client' ? rendreStatsClientHTML(data.stats) : rendreStatsEmployeHTML(data.stats));
+
+    } catch (error) {
+        console.log('Erreur lors du chargement des statistiques :', error);
+        contenu.innerHTML = `<p class="text-danger text-center py-4 mb-0">Impossible de contacter le serveur.</p>`;
+    } finally {
+        chargement.classList.add('d-none');
+        contenu.classList.remove('d-none');
+    }
+}
+
 // ─── Modale de confirmation (Suspendre / Supprimer) ──────────────────────────
 
 let actionEnAttente = null; // { type: 'suspendre' | 'supprimer', id, nom }
@@ -228,6 +334,7 @@ async function executerActionConfirmee() {
         // Recharge la liste correspondante
         if (typeUtilisateurActuel === 'client') afficherClients();
         else afficherEmployes();
+        if (type === 'supprimer') mettreAJourCompteurs();
 
     } catch (error) {
         console.log(`Erreur lors de l'action ${type} :`, error);
@@ -427,6 +534,7 @@ async function soumettreCreation(event) {
             if (radioEmploye) radioEmploye.checked = true;
             afficherEmployes();
         }
+        mettreAJourCompteurs();
 
     } catch (error) {
         console.log('Erreur lors de la création :', error);
@@ -498,5 +606,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Chargement initial (clients par défaut)
     if (window.location.pathname === '/utilisateurs') {
         afficherClients();
+        mettreAJourCompteurs();
     }
 });

@@ -11,6 +11,9 @@ function normaliserPeriode(periode) {
 /**
  * Construit les clauses SQL "période actuelle" / "période précédente équivalente"
  * pour une colonne date donnée (ex: 'c.date_emission', 'd.date_demande').
+ * NB : pour une colonne DATETIME (ex: document.date_importation), il faut
+ * l'envelopper avec DATE(...) avant de l'utiliser ici, sinon la comparaison
+ * d'égalité du cas "jour" ne matchera jamais (l'heure n'est pas minuit).
  */
 function clausesPeriode(colonne, periode) {
   switch (periode) {
@@ -44,8 +47,22 @@ function calculEvolution(actuel, precedent) {
 }
 
 /**
- * Cartes de synthèse : contrats, CA, véhicules assurés, assurés, demandes
- * pour la période demandée, avec évolution vs période précédente équivalente.
+ * Cartes de synthèse : chiffre d'affaires, véhicules assurés, assurés,
+ * + détail contrats (total / en cours / en attente d'effet / expirés)
+ * + détail demandes (total / en attente / validées / rejetées / taux d'acceptation)
+ * + répartition des véhicules assurés par catégorie (bonus), pour la période demandée.
+ *
+ * NB statuts "demande" : on classe par correspondance approximative (LIKE) plutôt
+ * que par égalité stricte, car la collation utf8mb4_0900_ai_ci est déjà insensible
+ * à la casse/aux accents, mais on ne connait pas la valeur exacte stockée pour une
+ * demande validée (seuls 'En attente' et 'rejete' sont visibles dans le dump actuel).
+ * Tout ce qui ne contient ni "attente" ni "rejet" est comptée comme "validée".
+ *
+ * NB statuts "contrat" : en cours / en attente d'effet / expiré sont calculés à
+ * partir des dates (date_effet, date_echeance) comparées à CURDATE(), et non à
+ * partir de `statut_validation` (qui semble représenter autre chose : brouillon
+ * vs validé administrativement). Dis-moi si tu veux plutôt baser ça sur
+ * `statut_validation`, j'ajusterai la requête.
  */
 async function getCartesSynthese(periodeBrute) {
   const periode = normaliserPeriode(periodeBrute);
@@ -55,8 +72,11 @@ async function getCartesSynthese(periodeBrute) {
 
   const [lignesContrats] = await pool.query(`
     SELECT
-      COUNT(DISTINCT CASE WHEN ${clContrat.actuel} THEN c.id_document END) AS contrats_actuel,
-      COUNT(DISTINCT CASE WHEN ${clContrat.precedent} THEN c.id_document END) AS contrats_precedent,
+      COUNT(DISTINCT CASE WHEN ${clContrat.actuel} THEN c.id_document END) AS total_actuel,
+      COUNT(DISTINCT CASE WHEN ${clContrat.actuel} AND c.date_effet > CURDATE() THEN c.id_document END) AS attente_effet_actuel,
+      COUNT(DISTINCT CASE WHEN ${clContrat.actuel} AND c.date_effet <= CURDATE() AND c.date_echeance >= CURDATE() THEN c.id_document END) AS en_cours_actuel,
+      COUNT(DISTINCT CASE WHEN ${clContrat.actuel} AND c.date_echeance < CURDATE() THEN c.id_document END) AS expires_actuel,
+      COUNT(DISTINCT CASE WHEN ${clContrat.precedent} THEN c.id_document END) AS total_precedent,
       COUNT(DISTINCT CASE WHEN ${clContrat.actuel} THEN c.id_vehicule END) AS vehicules_actuel,
       COUNT(DISTINCT CASE WHEN ${clContrat.actuel} THEN v.id_assure END) AS assures_actuel
     FROM contrat c
@@ -76,22 +96,113 @@ async function getCartesSynthese(periodeBrute) {
 
   const [lignesDemandes] = await pool.query(`
     SELECT
-      COUNT(CASE WHEN ${clDemande.actuel} THEN 1 END) AS demandes_actuel,
-      COUNT(CASE WHEN ${clDemande.precedent} THEN 1 END) AS demandes_precedent
+      COUNT(CASE WHEN ${clDemande.actuel} THEN 1 END) AS total_actuel,
+      COUNT(CASE WHEN ${clDemande.actuel} AND d.statut_demande LIKE '%attente%' THEN 1 END) AS attente_actuel,
+      COUNT(CASE WHEN ${clDemande.actuel} AND d.statut_demande LIKE '%rejet%' THEN 1 END) AS rejetees_actuel,
+      COUNT(CASE WHEN ${clDemande.actuel} AND d.statut_demande NOT LIKE '%attente%' AND d.statut_demande NOT LIKE '%rejet%' THEN 1 END) AS validees_actuel,
+      COUNT(CASE WHEN ${clDemande.precedent} THEN 1 END) AS total_precedent
     FROM demande_contrat d
   `);
   const dRow = lignesDemandes[0];
 
+  const [lignesCategories] = await pool.query(`
+    SELECT
+      COALESCE(NULLIF(TRIM(v.categorie), ''), 'Non renseignée') AS categorie,
+      COUNT(DISTINCT v.id_vehicule) AS nb
+    FROM contrat c
+    INNER JOIN vehicule v ON v.id_vehicule = c.id_vehicule
+    WHERE ${clContrat.actuel}
+    GROUP BY categorie
+    ORDER BY nb DESC
+    LIMIT 6
+  `);
+
+  const validees = Number(dRow.validees_actuel) || 0;
+  const rejetees = Number(dRow.rejetees_actuel) || 0;
+  const traitees = validees + rejetees;
+  const tauxAcceptation = traitees > 0 ? (validees / traitees) * 100 : null;
+
   return {
     periode,
-    contrats: s.contrats_actuel,
     ca: Number(caRow.ca_actuel),
+    evolution_ca: calculEvolution(caRow.ca_actuel, caRow.ca_precedent),
     vehicules_assures: s.vehicules_actuel,
     assures: s.assures_actuel,
-    demandes: dRow.demandes_actuel,
-    evolution_contrats: calculEvolution(s.contrats_actuel, s.contrats_precedent),
-    evolution_ca: calculEvolution(caRow.ca_actuel, caRow.ca_precedent),
-    evolution_demandes: calculEvolution(dRow.demandes_actuel, dRow.demandes_precedent),
+    demandes: {
+      total: dRow.total_actuel,
+      en_attente: dRow.attente_actuel,
+      validees,
+      rejetees,
+      evolution: calculEvolution(dRow.total_actuel, dRow.total_precedent),
+      taux_acceptation: tauxAcceptation,
+    },
+    contrats: {
+      total: s.total_actuel,
+      en_cours: s.en_cours_actuel,
+      en_attente_effet: s.attente_effet_actuel,
+      expires: s.expires_actuel,
+      evolution: calculEvolution(s.total_actuel, s.total_precedent),
+    },
+    repartition_vehicules_categorie: lignesCategories.map((r) => ({ categorie: r.categorie, nb: r.nb })),
+  };
+}
+
+/**
+ * Top 5 des employés les plus actifs sur la période choisie, avec le nombre
+ * de contrats scannés (documents importés puis rattachés à un contrat) et le
+ * nombre de demandes traitées (validées ou rejetées, hors "en attente").
+ *
+ * ⚠️ Important : ce classement dépend de `demande_contrat.id_employe` étant
+ * renseigné au moment où la demande est validée/rejetée. Dans le jeu de
+ * données actuel, ce champ reste NULL même pour des demandes déjà rejetées :
+ * il faudra que le contrôleur qui traite les demandes fasse bien
+ * `UPDATE demande_contrat SET statut_demande = ?, id_employe = ? WHERE id_demande = ?`
+ * avec l'utilisateur connecté, sinon "demandes traitées" restera à 0 pour tout le monde.
+ */
+async function getTopEmployes(periodeBrute) {
+  const periode = normaliserPeriode(periodeBrute);
+  const clDocument = clausesPeriode('DATE(doc.date_importation)', periode);
+  const clDemande = clausesPeriode('d.date_demande', periode);
+
+  const [rows] = await pool.query(`
+    SELECT
+      e.id_utilisateur,
+      e.nom,
+      e.prenom,
+      COALESCE(cs.nb, 0) AS contrats_scannes,
+      COALESCE(dt.nb, 0) AS demandes_traitees
+    FROM employe e
+    LEFT JOIN (
+      SELECT doc.id_employe AS id_employe, COUNT(DISTINCT c.id_document) AS nb
+      FROM contrat c
+      INNER JOIN document doc ON doc.id_document = c.id_document
+      WHERE ${clDocument.actuel}
+      GROUP BY doc.id_employe
+    ) cs ON cs.id_employe = e.id_utilisateur
+    LEFT JOIN (
+      SELECT d.id_employe AS id_employe, COUNT(*) AS nb
+      FROM demande_contrat d
+      WHERE d.id_employe IS NOT NULL
+        AND d.statut_demande NOT LIKE '%attente%'
+        AND ${clDemande.actuel}
+      GROUP BY d.id_employe
+    ) dt ON dt.id_employe = e.id_utilisateur
+    HAVING (contrats_scannes + demandes_traitees) > 0
+    ORDER BY (contrats_scannes + demandes_traitees) DESC, contrats_scannes DESC, e.nom ASC
+    LIMIT 5
+  `);
+
+  return {
+    periode,
+    employes: rows.map((r, index) => ({
+      rang: index + 1,
+      id_utilisateur: r.id_utilisateur,
+      nom: r.nom,
+      prenom: r.prenom,
+      contrats_scannes: r.contrats_scannes,
+      demandes_traitees: r.demandes_traitees,
+      score: Number(r.contrats_scannes) + Number(r.demandes_traitees),
+    })),
   };
 }
 
@@ -228,6 +339,27 @@ async function recupererDemandesParCle(periode) {
   return map;
 }
 
+// ── Répartition par statut (en attente / validées / rejetées), par créneau ──
+async function recupererDemandesStatutParCle(periode) {
+  const cle = expressionCle('d.date_demande', periode);
+  const fenetre = clauseFenetre('d.date_demande', periode);
+
+  const [rows] = await pool.query(`
+    SELECT
+      ${cle} AS cle,
+      COUNT(CASE WHEN d.statut_demande LIKE '%attente%' THEN 1 END) AS attente,
+      COUNT(CASE WHEN d.statut_demande LIKE '%rejet%' THEN 1 END) AS rejetees,
+      COUNT(CASE WHEN d.statut_demande NOT LIKE '%attente%' AND d.statut_demande NOT LIKE '%rejet%' THEN 1 END) AS validees
+    FROM demande_contrat d
+    ${fenetre}
+    GROUP BY cle
+  `);
+
+  const map = new Map();
+  rows.forEach((r) => map.set(String(r.cle), { attente: r.attente, rejetees: r.rejetees, validees: r.validees }));
+  return map;
+}
+
 /**
  * Séries temporelles (contrats, CA, demandes) pour les graphiques,
  * avec un pas adapté à la période choisie :
@@ -239,10 +371,11 @@ async function recupererDemandesParCle(periode) {
 async function getEvolution(periodeBrute) {
   const periode = normaliserPeriode(periodeBrute);
 
-  const [mapContrats, mapDemandes, mapCA] = await Promise.all([
+  const [mapContrats, mapDemandes, mapCA, mapDemandesStatut] = await Promise.all([
     recupererContratsParCle(periode),
     recupererDemandesParCle(periode),
     recupererCAParCle(periode),
+    recupererDemandesStatutParCle(periode),
   ]);
 
   let buckets;
@@ -263,7 +396,12 @@ async function getEvolution(periodeBrute) {
     contrats: buckets.map((b) => (mapContrats.get(b.cle) || { nb: 0 }).nb),
     chiffre_affaires: buckets.map((b) => mapCA.get(b.cle) || 0),
     demandes: buckets.map((b) => mapDemandes.get(b.cle) || 0),
+    demandes_par_statut: {
+      en_attente: buckets.map((b) => (mapDemandesStatut.get(b.cle) || {}).attente || 0),
+      validees: buckets.map((b) => (mapDemandesStatut.get(b.cle) || {}).validees || 0),
+      rejetees: buckets.map((b) => (mapDemandesStatut.get(b.cle) || {}).rejetees || 0),
+    },
   };
 }
 
-module.exports = { getCartesSynthese, getEvolution };
+module.exports = { getCartesSynthese, getEvolution, getTopEmployes };

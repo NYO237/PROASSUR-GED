@@ -130,7 +130,18 @@ async function exporterRapportExcel(req, res) {
 
     const esp       = N(r.sur_emission_especes);
     const elec      = N(r.sur_emission_electronique);
-    const surEmission = esp + elec;
+    const poolTpv       = N(r.pool_tpv);
+    const horsOrass     = N(r.hors_orass);
+    const courtage      = N(r.courtage);
+    const depotsClients = N(r.depots_clients);
+    const rembst        = N(r.rembst_clients_avenant);
+
+    // (5) TOTAUX / (5)-(6) ENCAISSEMENTS NETS — même formule que RapportJournalierService
+    const totalEspeces   = esp + poolTpv + horsOrass + courtage + depotsClients;
+    const totalCheques   = elec;
+    const encNetsEspeces = totalEspeces - rembst;
+    const encNetsCheques = totalCheques;
+
     const sp        = N(r.solde_initial_especes);
     const sc        = N(r.solde_initial_cheques);
     const com       = N(r.commissions_payees);
@@ -212,13 +223,13 @@ async function exporterRapportExcel(req, res) {
     );
 
     const activites = [
-      ['EMISSIONS HORS POOL TPV', surEmission, surEmission, 0],
-      ['EMISSIONS POOL TPV',       0, 0, 0],
-      ['COURTAGE',                 0, 0, 0],
-      ['DEPOT CLIENTS',            0, 0, 0],
+      ['EMISSIONS HORS POOL TPV', esp + elec, esp + elec, 0],
+      ['EMISSIONS POOL TPV',       poolTpv, poolTpv, 0],
+      ['COURTAGE',                 courtage, courtage, 0],
+      ['DEPOT CLIENTS',            depotsClients, depotsClients, 0],
       ['RECOUVREMENT',             0, 0, 0],
       ['VERSEMENT EN REMPLACEMENT DE CHEQUES', '', '', 0],
-      ['TOTAL', surEmission, surEmission, 0],
+      ['TOTAL', esp + elec + poolTpv + courtage + depotsClients, esp + elec + poolTpv + courtage + depotsClients, 0],
     ];
     activites.forEach(([label, prod, enc, ecart]) => {
       rowNum++;
@@ -238,21 +249,21 @@ async function exporterRapportExcel(req, res) {
     // ── Données grille ────────────────────────────────────────────
     const lignes = [
       { label: 'SUR EMISSIONS',
-        v: [esp, elec, 0, 0, 0, surEmission], bold: false },
+        v: [esp, elec, 0, 0, 0, esp + elec], bold: false },
       { label: 'POOL TPV',
-        v: [0, 0, 0, 0, 0, 0], bold: false },
+        v: [poolTpv, 0, 0, 0, 0, poolTpv], bold: false },
       { label: 'HORS ORASS',
-        v: [0, 0, 0, 0, 0, 0], bold: false },
+        v: [horsOrass, 0, 0, 0, 0, horsOrass], bold: false },
       { label: 'COURTAGE',
-        v: [0, 0, 0, 0, 0, 0], bold: false },
+        v: [courtage, 0, 0, 0, 0, courtage], bold: false },
       { label: 'DEPOTS CLIENTS',
-        v: [0, 0, 0, 0, 0, 0], bold: false },
+        v: [depotsClients, 0, 0, 0, 0, depotsClients], bold: false },
       { label: 'TOTAUX',
-        v: [esp, elec, 0, 0, 0, surEmission], bold: true, fill: gris },
+        v: [totalEspeces, totalCheques, 0, 0, 0, totalEspeces + totalCheques], bold: true, fill: gris },
       { label: 'REMBST CLIENTS/AVENANT',
-        v: [0, 0, 0, 0, 0, 0], bold: false },
+        v: [rembst, 0, 0, 0, 0, rembst], bold: false },
       { label: 'ENCAISSEMENTS NETS (5) - (6)',
-        v: [esp, elec, 0, 0, 0, surEmission], bold: true, fill: gris },
+        v: [encNetsEspeces, encNetsCheques, 0, 0, 0, encNetsEspeces + encNetsCheques], bold: true, fill: gris },
       { label: "SOLDE INITIAL (à l'ouverture)",
         v: [sp, sc, 0, 0, 0, sp + sc], bold: false },
       { label: 'COMISSIONS PAYEES',

@@ -159,10 +159,35 @@ async function insererOuRecupererVehicule(conn, donnees) {
   );
   if (assureExist.length > 0) {
     idAssure = assureExist[0].id_assure;
+    // Complète les coordonnées de l'assuré si un autre document du même lot
+    // (ou d'un lot précédent) les fournit et qu'elles étaient encore vides
+    // (ex: le contrat ne mentionne pas la profession mais la carte rose oui).
+    await conn.query(
+      `UPDATE assure
+       SET telephone  = COALESCE(telephone, ?),
+           profession = COALESCE(profession, ?),
+           activite   = COALESCE(activite, ?),
+           adresse    = COALESCE(adresse, ?)
+       WHERE id_assure = ?`,
+      [
+        donnees.telephone_assure || null,
+        donnees.profession_assure || null,
+        donnees.activite_assure || null,
+        donnees.adresse_assure || null,
+        idAssure,
+      ],
+    );
   } else {
     const [r] = await conn.query(
-      `INSERT INTO assure (nom, prenom) VALUES (?, ?)`,
-      [nomAssure, donnees.prenom_assure || null],
+      `INSERT INTO assure (nom, prenom, telephone, profession, activite, adresse) VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        nomAssure,
+        donnees.prenom_assure || null,
+        donnees.telephone_assure || null,
+        donnees.profession_assure || null,
+        donnees.activite_assure || null,
+        donnees.adresse_assure || null,
+      ],
     );
     idAssure = r.insertId;
   }
@@ -183,7 +208,7 @@ async function insererOuRecupererVehicule(conn, donnees) {
        nom_conducteur, prenom_conducteur, id_assure)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      "CAT 2",
+      donnees.categorie || "-",
       donnees.marque || "-",
       donnees.modele || "-",
       2,
@@ -298,9 +323,10 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
         await conn.query(
           `UPDATE contrat
            SET id_carte_rose  = COALESCE(id_carte_rose, ?),
-               id_attestation = COALESCE(id_attestation, ?)
+               id_attestation = COALESCE(id_attestation, ?),
+               nom_producteur = COALESCE(nom_producteur, ?)
            WHERE id_document = ?`,
-          [idCarteRose, idAttestation, idContrat],
+          [idCarteRose, idAttestation, contrat.nom_producteur || null, idContrat],
         );
         console.log(
           `[dbScanService] 🔄 Contrat ${code}/${police} mis à jour (FK carte rose + attestation)`,
@@ -325,8 +351,8 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
       await conn.query(
         `INSERT INTO contrat
           (id_document, code_bureau, num_police, date_emission, date_effet, date_echeance,
-           duree, statut_validation, id_vehicule, id_carte_rose, id_attestation)
-         VALUES (?, ?, ?, ?, ?, ?, 12, 'Brouillon', ?, ?, ?)`,
+           duree, statut_validation, nom_producteur, id_vehicule, id_carte_rose, id_attestation)
+         VALUES (?, ?, ?, ?, ?, ?, 12, 'Brouillon', ?, ?, ?, ?)`,
         [
           idDocument,
           code,
@@ -336,6 +362,7 @@ async function sauvegarderLotDocuments(documentsAnalyses, idEmploye) {
           contrat.date_emission || contrat.date_effet || null,
           contrat.date_effet || null,
           contrat.date_echeance || null,
+          contrat.nom_producteur || null,
           idVehicule,
           idCarteRose || null,
           idAttestation || null,

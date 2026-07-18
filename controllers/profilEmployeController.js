@@ -1,4 +1,5 @@
 const profilService = require('../services/ProfilEmployeService');
+const statsService = require('../services/StatsEmployeService');
 
 async function afficher_infos_employe(req, res) {
     try {
@@ -46,7 +47,25 @@ async function enregistrer_modification_employe(req,res) {
     }
 }
 
+async function afficher_statistiques_employe(req, res) {
+    try {
+        const statistiques = await statsService.recupererStatistiquesEmploye(req.user.id);
+
+        return res.status(200).json({
+            success: true,
+            statistiques,
+        });
+    } catch (error) {
+        console.error("Erreur dans afficher_statistiques_employe :", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erreur serveur lors de la récupération des statistiques."
+        });
+    }
+}
+
 module.exports = {
     afficher_infos_employe,
     enregistrer_modification_employe,
+    afficher_statistiques_employe,
 };

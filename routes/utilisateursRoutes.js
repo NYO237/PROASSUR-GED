@@ -9,6 +9,8 @@ const {
     basculerStatus,
     modifierUtilisateur,
     creerUtilisateur,
+    statistiquesClient,
+    statistiquesEmploye,
 } = require('../controllers/utilisateursController');
 
 // Toutes les routes de gestion des utilisateurs sont réservées aux chefs d'agence
@@ -16,6 +18,8 @@ router.use(authenticateToken, requireChefAgence);
 
 router.get('/afficher_infos_clients', afficher_infos_clients);
 router.get('/afficher_infos_employes', afficher_infos_employes);
+router.get('/stats_client/:id', statistiquesClient);
+router.get('/stats_employe/:id', statistiquesEmploye);
 
 router.post('/creer', creerUtilisateur);
 router.delete('/supprimer/:id', supprimerUtilisateur);

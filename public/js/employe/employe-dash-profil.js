@@ -1,4 +1,3 @@
-
 function getAuthHeaders() {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -153,10 +152,168 @@ async function modifier_profil() {
 
 
 
+// ─────────────────────────────────────────────────────────────
+// STATISTIQUES DE L'EMPLOYÉ (cards + graphique d'évolution)
+// ─────────────────────────────────────────────────────────────
+
+let statsEmployeCache = null;
+let chartEvolutionDemandes = null;
+let chartEvolutionContrats = null;
+
+async function afficher_statistiques_employe() {
+    try {
+        const response = await fetch("/api/profil/statistiques_employe", {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.statistiques) {
+            statsEmployeCache = data.statistiques;
+
+            const boutonActif = document.querySelector('#stats-periode-selector button.active');
+            const periodeActive = boutonActif ? boutonActif.dataset.periode : 'aujourdhui';
+
+            appliquer_periode_stats(periodeActive);
+            dessiner_graphique_demandes(statsEmployeCache.evolution_demandes);
+            dessiner_graphique_contrats(statsEmployeCache.evolution_contrats);
+        } else {
+            console.log("Erreur lors de la récupération des statistiques :", data.message);
+        }
+    } catch (error) {
+        console.log("Erreur réseau statistiques :", error);
+    }
+}
+
+// Remplit les cards pour la période choisie, à partir du cache déjà téléchargé
+// (pas de nouvel appel réseau à chaque clic sur un onglet de période).
+function appliquer_periode_stats(periode) {
+    if (!statsEmployeCache) return;
+
+    const documents = statsEmployeCache.documents[periode] || {};
+    const demandes = statsEmployeCache.demandes[periode] || {};
+    const contratsProduits = statsEmployeCache.contrats[periode] ?? 0;
+
+    const definir = (id, valeur) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = valeur ?? 0;
+    };
+
+    definir('stat-demandes-total', demandes.total);
+    definir('stat-demandes-validees', demandes.validees);
+    definir('stat-demandes-rejetees', demandes.rejetees);
+    definir('stat-demandes-attente', demandes.en_attente);
+    definir('stat-contrats-produits', contratsProduits);
+    definir('stat-documents-scannes', documents.total);
+
+    const detailEl = document.getElementById('stat-documents-detail');
+    if (detailEl) {
+        detailEl.textContent =
+            `Cartes roses : ${documents.cartes_roses ?? 0} · ` +
+            `Attestations : ${documents.attestations ?? 0} · ` +
+            `Contrats scannés : ${documents.contrats_scannes ?? 0}`;
+    }
+}
+
+// Graphique 1 : évolution des demandes traitées (validées / rejetées).
+function dessiner_graphique_demandes(evolution) {
+    const canvas = document.getElementById('chart-evolution-demandes');
+    if (!canvas || typeof Chart === 'undefined' || !Array.isArray(evolution)) return;
+
+    const labels = evolution.map((jour) => {
+        const d = new Date(jour.date);
+        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    });
+
+    if (chartEvolutionDemandes) {
+        chartEvolutionDemandes.destroy();
+    }
+
+    chartEvolutionDemandes = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Demandes validées',
+                    data: evolution.map((j) => j.demandes_validees),
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22, 163, 74, 0.12)',
+                    tension: 0.3,
+                    fill: true,
+                },
+                {
+                    label: 'Demandes rejetées',
+                    data: evolution.map((j) => j.demandes_rejetees),
+                    borderColor: '#d72323',
+                    backgroundColor: 'rgba(215, 35, 35, 0.08)',
+                    tension: 0.3,
+                    fill: true,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        },
+    });
+}
+
+// Graphique 2 : évolution des contrats produits par l'employé (comparaison
+// nom_producteur vs Nom + Prénom, calculée côté serveur).
+function dessiner_graphique_contrats(evolution) {
+    const canvas = document.getElementById('chart-evolution-contrats');
+    if (!canvas || typeof Chart === 'undefined' || !Array.isArray(evolution)) return;
+
+    const labels = evolution.map((jour) => {
+        const d = new Date(jour.date);
+        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    });
+
+    if (chartEvolutionContrats) {
+        chartEvolutionContrats.destroy();
+    }
+
+    chartEvolutionContrats = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Contrats produits',
+                    data: evolution.map((j) => j.contrats),
+                    backgroundColor: '#1746a2',
+                    borderRadius: 4,
+                    maxBarThickness: 28,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        },
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const boutonsPeriode = document.querySelectorAll('#stats-periode-selector button');
+    boutonsPeriode.forEach((bouton) => {
+        bouton.addEventListener('click', () => {
+            boutonsPeriode.forEach((b) => b.classList.remove('active'));
+            bouton.classList.add('active');
+            appliquer_periode_stats(bouton.dataset.periode);
+        });
+    });
+});
+
 // Ne pas oublier d'appeler la fonction au chargement si on est sur la page profil
 if (window.location.pathname.includes('/profil_proassur')) {
     console.log("Page profil détectée, lancement de ...");;
     afficher_infos_profil();
+    afficher_statistiques_employe();
 }
-
-

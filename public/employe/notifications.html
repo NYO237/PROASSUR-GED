@@ -60,11 +60,17 @@
         .notif-card.palier-j7     { border-left-color: #d72323; }
         .notif-card.palier-j14    { border-left-color: #b45309; }
         .notif-card.palier-j30    { border-left-color: #1746a2; }
+        /* Alertes "demande non traitée" : teinte violette dédiée pour bien les
+           distinguer des alertes de contrats au premier coup d'œil. */
+        .notif-card.palier-demande-attente { border-left-color: #7c3aed; }
+        .notif-card.palier-demande-urgente { border-left-color: #a21caf; }
         .badge-palier { font-weight: 600; border-radius: 30px; padding: 5px 14px; font-size: 0.8rem; }
         .badge-palier.palier-expire { color: #be123c; background-color: #ffe4e6; }
         .badge-palier.palier-j7     { color: #be123c; background-color: #ffe4e6; }
         .badge-palier.palier-j14    { color: #b45309; background-color: #fef3c7; }
         .badge-palier.palier-j30    { color: #1746a2; background-color: #dbeafe; }
+        .badge-palier.palier-demande-attente { color: #7c3aed; background-color: #ede9fe; }
+        .badge-palier.palier-demande-urgente { color: #a21caf; background-color: #fae8ff; }
         .icone-cloche { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); color: var(--bleu-primary); position: relative; text-decoration: none; }
         .icone-cloche:hover { color: var(--bleu-secondary); }
     </style>
@@ -153,9 +159,10 @@
             <div class="container-fluid bg-info bg-opacity-10 text-info-emphasis p-3 rounded-3 d-flex align-items-center shadow-sm mb-4 border border-info border-opacity-25">
                 <p class="mb-0">
                     <strong><i class="fa-solid fa-circle-info me-2"></i>À propos :</strong>
-                    Cette page liste, pour chaque véhicule, le contrat le plus récent lorsqu'il est déjà expiré
-                    ou arrive à échéance dans les 30 prochains jours et qu'aucun nouveau contrat n'a encore
-                    été enregistré pour ce véhicule.
+                    Cette page liste deux types d'alertes : les <strong>demandes de contrat</strong> non traitées
+                    depuis plus de 2h (uniquement en journée, entre 6h et 20h — aucune alerte de demande la nuit),
+                    et les <strong>contrats</strong> dont le véhicule n'a aucun renouvellement enregistré alors que
+                    le contrat le plus récent est déjà expiré ou arrive à échéance dans les 30 prochains jours.
                 </p>
             </div>
             <div id="notifications-chargement" class="text-center text-secondary py-5">
@@ -164,9 +171,11 @@
             <div id="notifications-vide" class="dashboard-card p-5 text-center d-none">
                 <i class="fa-solid fa-circle-check fs-1 text-success mb-3"></i>
                 <h5 class="fw-bold">Tout est à jour</h5>
-                <p class="text-secondary mb-0">Aucun contrat n'est expiré ou proche de l'échéance sans renouvellement.</p>
+                <p class="text-secondary mb-0">Aucune demande en attente et aucun contrat expiré ou proche de l'échéance sans renouvellement.</p>
             </div>
             <div id="notifications-contenu" class="d-none">
+                <div id="groupe-demande-urgente"></div>
+                <div id="groupe-demande-attente"></div>
                 <div id="groupe-expire"></div>
                 <div id="groupe-j7"></div>
                 <div id="groupe-j14"></div>

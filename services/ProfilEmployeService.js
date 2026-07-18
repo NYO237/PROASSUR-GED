@@ -25,7 +25,7 @@ async function enregistrer_modifications_employe({idClient}, form){
     // Si un nouveau mot de passe est fourni, on met à jour le MDP aussi
     if (mdp && mdp.trim() !== "") {
         const [response] = await pool.query(
-            "UPDATE employe SET nom = ?, prenom = ?, identifiant = ?, mdp = ? adresse = ?, sexe = ? WHERE id_utilisateur = ?",
+            "UPDATE employe SET nom = ?, prenom = ?, identifiant = ?, mdp = ?, adresse = ?, sexe = ? WHERE id_utilisateur = ?",
             [nom, prenom, identifiant, hashedPassword, adresse, sexe, idClient]
         );
         return response;

@@ -34,6 +34,31 @@ async function createDemande(req, res) {
       });
     }
 
+    // Garanties cochées dans le formulaire (checkboxes name="garanties").
+    // multer ne renvoie un tableau que s'il y a 2+ occurrences du champ ;
+    // avec une seule case cochée on reçoit une simple chaîne, d'où la
+    // normalisation ci-dessous.
+    let garanties = req.body.garanties || [];
+    if (!Array.isArray(garanties)) {
+      garanties = [garanties];
+    }
+    garanties = garanties.map((g) => (g || '').trim()).filter(Boolean);
+
+    // Garantie tapée librement par le client si elle ne figure pas dans la liste.
+    const autreGarantie = (req.body.autre_garantie || '').trim();
+    if (autreGarantie) {
+      garanties.push(autreGarantie);
+    }
+
+    // Dédoublonnage (ex : le client coche "Défense et Recours" ET retape
+    // exactement la même chose dans le champ libre par erreur).
+    garanties = [...new Set(garanties)];
+
+    // Case à cocher "Vignette payée" : absente du body si décochée.
+    const vignettePayee = ['1', 'true', 'on', 'oui'].includes(
+      String(req.body.vignette_payee || '').toLowerCase()
+    );
+
     const urlCni = await uploadToCloudinary(req.files.cni[0]);
     const urlCarteGrise = await uploadToCloudinary(req.files['input-carte-grise'][0]);
 
@@ -48,6 +73,8 @@ async function createDemande(req, res) {
       urlPermis,
       urlCarteGrise,
       dureeMois,
+      garanties,
+      vignettePayee,
     });
 
     return res.status(201).json({
@@ -55,6 +82,8 @@ async function createDemande(req, res) {
       message: 'Demande enregistrée avec succès.',
       idDemande,
       dureeMois,
+      garanties,
+      vignettePayee,
       urls: {
         cni: urlCni,
         permis: urlPermis,
@@ -181,8 +210,11 @@ async function validerDemande(req, res) {
           return res.status(400).json({ success: false, message: "ID de la demande manquant." });
       }
 
-      // Transmission correcte sous forme d'objet { idDemande } pour correspondre au service
-      await demandeService.validerDemande({ idDemande });
+      // L'employé qui traite la demande est celui authentifié par le token :
+      // on l'enregistre (id_employe) pour pouvoir ensuite compter les demandes
+      // traitées par employé (statistiques). Avant ce correctif, id_employe
+      // restait NULL pour toutes les demandes, quel que soit qui validait.
+      await demandeService.validerDemande({ idDemande, idEmploye: req.user.id });
       
       return res.status(200).json({
           success : true,
@@ -210,8 +242,8 @@ async function rejeterDemande(req, res) {
           return res.status(400).json({ success: false, message: "Le motif de rejet est obligatoire." });
       }
 
-      // Transmission correcte sous forme d'objet { idDemande, motif } pour correspondre au service
-      await demandeService.rejeterDemande({ idDemande, motif });
+      // Même correctif que pour validerDemande : on enregistre l'employé qui rejette.
+      await demandeService.rejeterDemande({ idDemande, motif, idEmploye: req.user.id });
       
       return res.status(200).json({
           success : true,

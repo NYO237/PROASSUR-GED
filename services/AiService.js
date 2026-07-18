@@ -24,6 +24,8 @@ TYPE DE DOCUMENT (ordre de priorité) :
 
 MONTANTS (prime_nette, prime_totale, accessoires, tva, carte_rose_montant, fc_automobile, dta, bonus) : le "." du texte source est un séparateur de milliers, jamais une décimale ("10.739"→10739, "1.000"→1000). Toujours des entiers, sans point.
 
+CATEGORIE : chiffre entre parenthèses en fin de ligne "Produit" (ex: "(1)"→1, "(05)"→5).
+
 POLICE : format XXXX/XXXXXXXXX ou XXXX-XXXXXXXXX. code_bureau=4 chiffres avant "/" ou "-". num_police=chiffres après, sans n° d'avenant.
 
 date_emission : uniquement après "Emis le" (≠ date d'effet, ne jamais confondre). Absent → null, ne jamais réutiliser une autre date à la place. Toutes les dates (date_emission, date_effet, date_echeance) au format YYYY-MM-DD, jamais DD/MM/YYYY.
@@ -36,10 +38,14 @@ ADRESSE PROASSUR ("Wafa Assurance", "Rue Toyota", "Bonaprisso", "BP:5963 Douala"
 
 Extraire aussi (même carte rose/attestation) : nom_assure (sans M./Mme), immatriculation, marque, modele, numero_chassis, dates, code_bureau, num_police.
 
+COORDONNÉES ASSURÉ : telephone_assure (numéro dans SON bloc "Assuré", jamais celui de l'agence PROASSUR en en-tête), adresse_assure, profession_assure, activite_assure. Si la valeur est "Non défini(e)" ou absente, mettre null (jamais recopier ce texte).
+
+PRODUCTEUR : nom_producteur = nom après "Contrat Produit par :" (sans le rôle, ex: "Chargé de la clientèle").
+
 GARANTIES (contrat uniquement) : noms du tableau Garanties sans montants (ex: Responsabilité Civile, Recours Tierce Incendie, Défense et Recours, IPT, Aide à la Réparation). Sinon [].
 
 JSON attendu :
-{"type_document":"contrat|carte rose|attestation|état de recettes|autre","code_bureau":null,"num_police":null,"num_carte_rose":null,"num_attestation":null,"date_emission":null,"date_effet":null,"date_echeance":null,"nom_assure":null,"prenom_assure":null,"immatriculation":null,"marque":null,"modele":null,"numero_chassis":null,"nom_conducteur":null,"prenom_conducteur":null,"prime_nette":0,"prime_totale":0,"accessoires":0,"tva":0,"carte_rose_montant":0,"fc_automobile":0,"dta":0,"bonus":0,"garanties":[]}`;
+{"type_document":"contrat|carte rose|attestation|état de recettes|autre","code_bureau":null,"num_police":null,"num_carte_rose":null,"num_attestation":null,"date_emission":null,"date_effet":null,"date_echeance":null,"nom_assure":null,"prenom_assure":null,"telephone_assure":null,"adresse_assure":null,"profession_assure":null,"activite_assure":null,"nom_producteur":null,"immatriculation":null,"marque":null,"modele":null,"numero_chassis":null,"categorie":null,"nom_conducteur":null,"prenom_conducteur":null,"prime_nette":0,"prime_totale":0,"accessoires":0,"tva":0,"carte_rose_montant":0,"fc_automobile":0,"dta":0,"bonus":0,"garanties":[]}`;
 
 // Un seul modèle : plus capable que llama-3.1-8b-instant, et avec un plafond
 // journalier (TPD) DEUX FOIS plus généreux que llama-3.3-70b-versatile
@@ -336,6 +342,14 @@ function appliquerCorrectionsDeterministes(rawJson, texteOriginal) {
   // fausse marque corrompre la fiche véhicule.
   if (JETONS_ADRESSE_PROASSUR.test(String(data.marque || ""))) data.marque = null;
   if (JETONS_ADRESSE_PROASSUR.test(String(data.modele || ""))) data.modele = null;
+
+  // Filet 0 token : si le modèle recopie quand même "Non défini(e)" au lieu de
+  // null (consigne pourtant donnée) sur les coordonnées de l'assuré.
+  for (const champ of ["profession_assure", "activite_assure", "adresse_assure", "telephone_assure"]) {
+    if (/^non\s+d[ée]fini(e)?$/i.test(String(data[champ] || "").trim())) {
+      data[champ] = null;
+    }
+  }
 
   // Le modèle sépare parfois nom/prénom malgré la consigne contraire :
   // on refusionne dans l'ordre d'origine (nom puis prénom) plutôt que de

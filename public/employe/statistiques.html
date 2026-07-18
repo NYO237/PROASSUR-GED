@@ -162,6 +162,22 @@
             letter-spacing: 0.5px;
             box-shadow: 0 4px 10px rgba(215, 35, 35, 0.15);
         }
+        .icone-cloche {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            color: var(--bleu-primary);
+            position: relative;
+            text-decoration: none;
+        }
+        .icone-cloche:hover {
+            color: var(--bleu-secondary);
+        }
 
         /* CARTES DE STATISTIQUES PLUS ARRONDIES ET FLUIDES */
         .stat-card {
@@ -177,17 +193,11 @@
             border-color: rgba(23, 70, 162, 0.2) !important;
         }
 
-        /* Harmonisation des cartes de graphiques */
+        /* Harmonisation des cartes de graphiques (pas d'effet de survol ici) */
         .card.border-0.shadow-sm.rounded-4 {
             border: 1px solid var(--line) !important;
             border-radius: var(--radius-lg) !important;
             box-shadow: 0 4px 6px -1px rgba(15, 44, 89, 0.02) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .card.border-0.shadow-sm.rounded-4:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(15, 44, 89, 0.05) !important;
-            border-color: rgba(23, 70, 162, 0.2) !important;
         }
         
         /* Zone de dépôt pour le scanner */
@@ -250,6 +260,165 @@
         .info-banner {
             border-radius: var(--radius-md) !important;
         }
+
+        /* --- NOUVEAU : titres de section --- */
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--bleu-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title i { color: var(--rouge-accent); }
+
+        /* --- NOUVEAU : icônes circulaires colorées --- */
+        .icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .icon-bleu  { background: rgba(23, 70, 162, 0.1);  color: var(--bleu-secondary); }
+        .icon-rouge { background: rgba(215, 35, 35, 0.1);  color: var(--rouge-accent); }
+        .icon-vert  { background: rgba(22, 163, 74, 0.1);  color: #16a34a; }
+        .icon-gris  { background: rgba(100, 116, 139, 0.1); color: var(--slate-500); }
+
+        /* --- NOUVEAU : cartes détaillées contrats / demandes --- */
+        .stat-card-detail {
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 6px -1px rgba(15, 44, 89, 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card-detail:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(15, 44, 89, 0.05);
+            border-color: rgba(23, 70, 162, 0.2);
+        }
+
+        .segmented-bar {
+            display: flex;
+            height: 10px;
+            width: 100%;
+            background-color: #eef2f6;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .segmented-bar > div {
+            transition: width 0.4s ease;
+            height: 100%;
+        }
+        .seg-vert   { background-color: #16a34a; }
+        .seg-orange { background-color: #f59e0b; }
+        .seg-gris   { background-color: #94a3b8; }
+        .seg-rouge  { background-color: var(--rouge-accent); }
+
+        .detail-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            background-color: #f8fafc;
+            border: 1px solid var(--line);
+            padding: 0.4rem 0.75rem;
+            border-radius: 999px;
+        }
+        .detail-pill strong { color: var(--bleu-primary); font-weight: 700; }
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-vert   { background-color: #16a34a; }
+        .dot-orange { background-color: #f59e0b; }
+        .dot-gris   { background-color: #94a3b8; }
+        .dot-rouge  { background-color: var(--rouge-accent); }
+
+        .badge-taux {
+            background-color: rgba(22, 163, 74, 0.1);
+            color: #16a34a;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.35rem 0.8rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        /* --- NOUVEAU : classement des employés --- */
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background-color: #fff;
+            transition: all 0.25s ease;
+        }
+        .leaderboard-item:hover {
+            background-color: #f8fafc;
+            transform: translateX(4px);
+        }
+        .rank-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #fff;
+            background-color: var(--slate-500);
+            flex-shrink: 0;
+        }
+        .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
+        .rank-2 { background: linear-gradient(135deg, #cbd5e1, #94a3b8); box-shadow: 0 4px 10px rgba(148, 163, 184, 0.3); }
+        .rank-3 { background: linear-gradient(135deg, #d97706, #92400e); box-shadow: 0 4px 10px rgba(146, 64, 14, 0.25); }
+
+        .employe-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: var(--bleu-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .employe-stat-badge {
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.3rem 0.6rem;
+            border-radius: 999px;
+        }
+        .employe-stat-badge.scans    { background-color: rgba(23, 70, 162, 0.1); color: var(--bleu-secondary); }
+        .employe-stat-badge.demandes { background-color: rgba(215, 35, 35, 0.1); color: var(--rouge-accent); }
+
+        /* --- NOUVEAU : conteneur à hauteur fixe pour les graphiques Chart.js --- */
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            height: 270px;
+        }
+        .chart-wrap.chart-wrap-vide {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -303,7 +472,7 @@
                             <i class="fa-solid fa-cash-register me-2"></i> Rapport de caisse
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item chef-agence-only">
                         <a href="/statistiques" class="nav-link active" data-target="tab-statistiques">
                             <i class="fa-solid fa-chart-pie me-2"></i> Statistiques
                         </a>
@@ -339,9 +508,15 @@
                     <h2 class="fw-bold mb-1" style="color: var(--bleu-primary);">Tableau de bord</h2>
                     <p class="text-secondary mb-0" id="message-bienvenue">Ravi de vous revoir, <strong>M. Owen</strong> !</p>
                 </div>
-                <span class="badge badge-statut rounded-pill fs-6 px-3 py-2">
-                    Statut : Employé
-                </span>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/notifications" class="icone-cloche" title="Notifications">
+                        <i class="fa-solid fa-bell fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notif-badge d-none" style="font-size:0.65rem;">0</span>
+                    </a>
+                    <span class="badge badge-statut rounded-pill fs-6 px-3 py-2" id="badge-statut-utilisateur">
+                        Employé
+                    </span>
+                </div>
             </div>
 
             <!-- ONGLET : STATISTIQUES -->
@@ -365,32 +540,18 @@
                     </div>
                 </div>
 
-                <!-- CARTES DE SYNTHESE -->
+                <!-- VUE D'ENSEMBLE -->
+                <h6 class="section-title"><i class="fa-solid fa-gauge-high"></i>Vue d'ensemble</h6>
                 <div class="row g-4 mb-4">
                     <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="card stat-card p-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-contrats">Contrats</h6>
-                                    <h3 class="fw-bold mb-1" style="color: var(--bleu-primary);" id="stat-contrats">—</h3>
-                                    <span class="small fw-semibold text-secondary" id="stat-evolution-contrats">—</span>
-                                </div>
-                                <div class="bg-secondary bg-opacity-10 p-3 rounded-circle text-secondary">
-                                    <i class="fa-solid fa-file-contract fs-4"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="card stat-card p-4">
+                        <div class="card stat-card p-4 h-100">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-ca">Chiffre d'affaires</h6>
                                     <h3 class="fw-bold mb-1" style="color: var(--bleu-primary);" id="stat-ca">—</h3>
                                     <span class="small fw-semibold text-secondary" id="stat-evolution-ca">—</span>
                                 </div>
-                                <div class="bg-secondary bg-opacity-10 p-3 rounded-circle text-secondary">
+                                <div class="icon-circle icon-vert">
                                     <i class="fa-solid fa-coins fs-4"></i>
                                 </div>
                             </div>
@@ -398,42 +559,27 @@
                     </div>
 
                     <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="card stat-card p-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-demandes">Demandes</h6>
-                                    <h3 class="fw-bold mb-1" style="color: var(--bleu-primary);" id="stat-demandes">—</h3>
-                                    <span class="small fw-semibold text-secondary" id="stat-evolution-demandes">—</span>
-                                </div>
-                                <div class="bg-secondary bg-opacity-10 p-3 rounded-circle text-secondary">
-                                    <i class="fa-solid fa-inbox fs-4"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-sm-6">
-                        <div class="card stat-card p-4">
+                        <div class="card stat-card p-4 h-100">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-vehicules">Véhicules assurés</h6>
                                     <h3 class="fw-bold mb-0" style="color: var(--bleu-primary);" id="stat-vehicules">—</h3>
                                 </div>
-                                <div class="bg-secondary bg-opacity-10 p-3 rounded-circle text-secondary">
+                                <div class="icon-circle icon-bleu">
                                     <i class="fa-solid fa-car fs-4"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="card stat-card p-4">
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <div class="card stat-card p-4 h-100">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-uppercase text-secondary small fw-bold" id="lbl-assures">Assurés</h6>
                                     <h3 class="fw-bold mb-0" style="color: var(--bleu-primary);" id="stat-assures">—</h3>
                                 </div>
-                                <div class="bg-secondary bg-opacity-10 p-3 rounded-circle text-secondary">
+                                <div class="icon-circle icon-gris">
                                     <i class="fa-solid fa-users fs-4"></i>
                                 </div>
                             </div>
@@ -441,32 +587,120 @@
                     </div>
                 </div>
 
+                <!-- DETAIL CONTRATS & DEMANDES -->
+                <h6 class="section-title"><i class="fa-solid fa-layer-group"></i>Détail des contrats &amp; des demandes</h6>
+                <div class="row g-4 mb-4">
+
+                    <!-- CONTRATS -->
+                    <div class="col-12 col-lg-6">
+                        <div class="card stat-card-detail p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="text-uppercase text-secondary small fw-bold mb-1" id="lbl-contrats">Contrats</h6>
+                                    <h2 class="fw-bold mb-0" style="color: var(--bleu-primary);" id="stat-contrats">—</h2>
+                                    <span class="small fw-semibold text-secondary" id="stat-evolution-contrats">—</span>
+                                </div>
+                                <div class="icon-circle icon-bleu">
+                                    <i class="fa-solid fa-file-contract fs-4"></i>
+                                </div>
+                            </div>
+                            <div class="segmented-bar mb-3">
+                                <div class="seg-vert" id="seg-contrats-en-cours" style="width:0%"></div>
+                                <div class="seg-orange" id="seg-contrats-attente-effet" style="width:0%"></div>
+                                <div class="seg-gris" id="seg-contrats-expires" style="width:0%"></div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="detail-pill"><span class="dot dot-vert"></span>En cours <strong id="contrats-en-cours">—</strong></div>
+                                <div class="detail-pill"><span class="dot dot-orange"></span>Attente d'effet <strong id="contrats-attente-effet">—</strong></div>
+                                <div class="detail-pill"><span class="dot dot-gris"></span>Expirés <strong id="contrats-expires">—</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DEMANDES -->
+                    <div class="col-12 col-lg-6">
+                        <div class="card stat-card-detail p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="text-uppercase text-secondary small fw-bold mb-1" id="lbl-demandes">Demandes</h6>
+                                    <h2 class="fw-bold mb-0" style="color: var(--bleu-primary);" id="stat-demandes">—</h2>
+                                    <span class="small fw-semibold text-secondary" id="stat-evolution-demandes">—</span>
+                                </div>
+                                <div class="d-flex flex-column align-items-end gap-2">
+                                    <div class="icon-circle icon-rouge">
+                                        <i class="fa-solid fa-inbox fs-4"></i>
+                                    </div>
+                                    <span class="badge-taux" id="demandes-taux-acceptation">—</span>
+                                </div>
+                            </div>
+                            <div class="segmented-bar mb-3">
+                                <div class="seg-orange" id="seg-demandes-attente" style="width:0%"></div>
+                                <div class="seg-vert" id="seg-demandes-validees" style="width:0%"></div>
+                                <div class="seg-rouge" id="seg-demandes-rejetees" style="width:0%"></div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="detail-pill"><span class="dot dot-orange"></span>En attente <strong id="demandes-en-attente">—</strong></div>
+                                <div class="detail-pill"><span class="dot dot-vert"></span>Validées <strong id="demandes-validees">—</strong></div>
+                                <div class="detail-pill"><span class="dot dot-rouge"></span>Rejetées <strong id="demandes-rejetees">—</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOP 5 DES EMPLOYES -->
+                <h6 class="section-title">
+                    <i class="fa-solid fa-trophy"></i>Top 5 des employés
+                    <span class="text-secondary text-lowercase fw-normal ms-1" id="top-employes-periode-label"></span>
+                </h6>
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                            <div class="d-flex flex-column gap-3" id="top-employes-liste">
+                                <p class="text-secondary small mb-0">Chargement du classement…</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- GRAPHIQUES -->
+                <h6 class="section-title"><i class="fa-solid fa-chart-line"></i>Évolution</h6>
                 <div class="row g-4">
                     <div class="col-12 col-lg-6">
                         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
                             <h6 class="fw-bold text-dark mb-3">
                                 <i class="fa-solid fa-chart-line text-primary me-2"></i>Évolution des contrats
                             </h6>
-                            <canvas id="chart-contrats" height="220"></canvas>
+                            <div class="chart-wrap"><canvas id="chart-contrats"></canvas></div>
                         </div>
                     </div>
 
                     <div class="col-12 col-lg-6">
                         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
                             <h6 class="fw-bold text-dark mb-3">
-                                <i class="fa-solid fa-inbox text-primary me-2"></i>Évolution des demandes
+                                <i class="fa-solid fa-chart-column text-primary me-2"></i>Évolution du chiffre d'affaires
                             </h6>
-                            <canvas id="chart-demandes" height="220"></canvas>
+                            <div class="chart-wrap"><canvas id="chart-ca"></canvas></div>
                         </div>
                     </div>
 
-                    <div class="col-12">
+                    <div class="col-12 col-lg-7">
                         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
                             <h6 class="fw-bold text-dark mb-3">
-                                <i class="fa-solid fa-chart-column text-primary me-2"></i>Évolution du chiffre d'affaires
+                                <i class="fa-solid fa-inbox text-primary me-2"></i>Évolution des demandes par statut
                             </h6>
-                            <canvas id="chart-ca" height="220"></canvas>
+                            <div class="chart-wrap"><canvas id="chart-demandes"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                            <h6 class="fw-bold text-dark mb-3">
+                                <i class="fa-solid fa-chart-pie text-primary me-2"></i>Véhicules assurés par catégorie
+                            </h6>
+                            <div class="chart-wrap">
+                                <canvas id="chart-categories-vehicules"></canvas>
+                                <p class="text-secondary small mb-0 text-center d-none" id="chart-categories-vehicules-vide">Aucune donnée pour cette période.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -479,6 +713,7 @@
     <script src="/bootstrap-js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="/js/employe/employe-dash-statistiques.js"></script>
+    <script src="/js/employe/notifications-badge.js"></script>
     <script src="/js/auth-guard.js"></script>
 </body>
 </html>

@@ -241,6 +241,56 @@
         .table tbody tr:hover {
             background-color: #f8fafc;
         }
+        .ligne-utilisateur-cliquable {
+            cursor: pointer;
+        }
+
+        /* --- MODALE DE DÉTAILS (STATISTIQUES) --- */
+        .stat-section-titre {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--bleu-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+        .stat-mini-card {
+            background-color: #f8fafc;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            padding: 1rem 0.5rem;
+            text-align: center;
+            height: 100%;
+        }
+        .stat-mini-card .stat-valeur {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--bleu-primary);
+            line-height: 1.2;
+        }
+        .stat-mini-card .stat-libelle {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--slate-500);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        /* Badge de comptage à côté des boutons Clients / Employés */
+        .badge-compteur-type {
+            background-color: #e2e8f0;
+            color: var(--slate-500);
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            margin-left: 0.4rem;
+            vertical-align: middle;
+        }
+        .btn-check:checked + .user-selector-card .badge-compteur-type {
+            background-color: var(--bleu-secondary);
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -289,7 +339,7 @@
                             <i class="fa-solid fa-cash-register me-2"></i> Rapport de caisse
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item chef-agence-only">
                         <a href="/statistiques" class="nav-link" data-target="tab-statistiques">
                             <i class="fa-solid fa-chart-pie me-2"></i> Statistiques
                         </a>
@@ -344,7 +394,7 @@
                           <div class="form-check p-0 position-relative">
                             <input type="radio" name="type-utilisateur" id="type-client" value="client" class="btn-check" checked>
                             <label for="type-client" class="btn user-selector-card d-flex align-items-center justify-content-between p-4 w-100 shadow-sm border-2">
-                              <span class="fs-5 fw-bold text-start">Clients</span>
+                              <span class="fs-5 fw-bold text-start">Clients<span class="badge-compteur-type" id="badge-total-clients">–</span></span>
                               <i class="fa-solid fa-users fs-3 opacity-75"></i>
                             </label>
                           </div>
@@ -355,7 +405,7 @@
                           <div class="form-check p-0 position-relative">
                             <input type="radio" name="type-utilisateur" id="type-employe" value="employe" class="btn-check">
                             <label for="type-employe" class="btn user-selector-card d-flex align-items-center justify-content-between p-4 w-100 shadow-sm border-2">
-                              <span class="fs-5 fw-bold text-start">Employés</span>
+                              <span class="fs-5 fw-bold text-start">Employés<span class="badge-compteur-type" id="badge-total-employes">–</span></span>
                               <i class="fa-solid fa-user-tie fs-3 opacity-75"></i>
                             </label>
                           </div>
@@ -501,6 +551,28 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE DE DETAILS (STATISTIQUES) -->
+    <div class="modal fade" id="modaleDetailsUtilisateur" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow" style="border-radius: var(--radius-lg);">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-1" id="details-nom-utilisateur">—</h5>
+                        <span class="badge-compteur-type" id="details-badge-role" style="background-color: rgba(23,70,162,0.08); color: var(--bleu-secondary); border-radius: var(--radius-sm); padding: 0.3rem 0.7rem;">—</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <div id="details-chargement" class="text-center py-5 text-secondary">
+                        <div class="spinner-border text-primary mb-2" role="status"></div>
+                        <p class="mb-0 small">Chargement des statistiques...</p>
+                    </div>
+                    <div id="details-contenu" class="d-none"></div>
                 </div>
             </div>
         </div>

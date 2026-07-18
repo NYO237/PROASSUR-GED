@@ -72,9 +72,23 @@ function afficherZoneScan() {
 
 // ── Affichage du tableau rapport ──────────────────────────────────────────────
 function afficherRapport(r) {
-  const esp         = Number(r.sur_emission_especes      || 0);
-  const elec        = Number(r.sur_emission_electronique || 0);
-  const surEmission = esp + elec;
+  const esp          = Number(r.sur_emission_especes      || 0);
+  const elec         = Number(r.sur_emission_electronique || 0);
+  const poolTpv       = Number(r.pool_tpv                  || 0);
+  const horsOrass      = Number(r.hors_orass                || 0);
+  const courtage       = Number(r.courtage                  || 0);
+  const depotsClients  = Number(r.depots_clients             || 0);
+  const rembst         = Number(r.rembst_clients_avenant      || 0);
+
+  // (5) TOTAUX = toutes les lignes d'encaissement en espèces (+ chèques/élec)
+  const totalEspeces   = esp + poolTpv + horsOrass + courtage + depotsClients;
+  const totalCheques   = elec;
+  // (5)-(6) ENCAISSEMENTS NETS = TOTAUX - REMBST CLIENTS/AVENANT
+  const encNetsEspeces = totalEspeces - rembst;
+  const encNetsCheques = totalCheques;
+
+  const surEmission = esp + elec; // utilisé pour la section "Activités de la journée"
+
   const sp          = Number(r.solde_initial_especes     || 0);
   const sc          = Number(r.solde_initial_cheques     || 0);
   const com         = Number(r.commissions_payees        || 0);
@@ -91,6 +105,79 @@ function afficherRapport(r) {
   // Helper : cellule td numérique formatée
   const td = (v, cls = '') =>
     `<td class="text-end ${cls}">${numFr(v)}</td>`;
+
+  // Registre des lignes éditables : pour chaque ligne, la ou les colonnes
+  // (champ BDD + valeur actuelle) que le crayon permet de modifier.
+  lignesEditables = {
+    sur_emission: {
+      titre: 'Sur émissions',
+      colonnes: [
+        { label: 'ESPÈCES',      field: 'sur_emission_especes',      value: esp  },
+        { label: 'CHÈQUES/ÉLEC', field: 'sur_emission_electronique', value: elec },
+      ],
+    },
+    pool_tpv: {
+      titre: 'Pool TPV',
+      colonnes: [
+        { label: 'ESPÈCES', field: 'pool_tpv', value: poolTpv },
+      ],
+    },
+    hors_orass: {
+      titre: 'Hors ORASS',
+      colonnes: [
+        { label: 'ESPÈCES', field: 'hors_orass', value: horsOrass },
+      ],
+    },
+    courtage: {
+      titre: 'Courtage',
+      colonnes: [
+        { label: 'ESPÈCES', field: 'courtage', value: courtage },
+      ],
+    },
+    depots_clients: {
+      titre: 'Dépôts clients',
+      colonnes: [
+        { label: 'ESPÈCES', field: 'depots_clients', value: depotsClients },
+      ],
+    },
+    rembst_clients_avenant: {
+      titre: 'Remboursements clients / avenants',
+      colonnes: [
+        { label: 'ESPÈCES', field: 'rembst_clients_avenant', value: rembst },
+      ],
+    },
+    commissions_payees: {
+      titre: 'Commissions payées',
+      colonnes: [
+        { label: 'ESPÈCES', field: 'commissions_payees', value: com },
+      ],
+    },
+    solde_initial: {
+      titre: "Solde initial (à l'ouverture)",
+      colonnes: [
+        { label: 'ESPÈCES',      field: 'solde_initial_especes', value: sp },
+        { label: 'CHÈQUES/ÉLEC', field: 'solde_initial_cheques', value: sc },
+      ],
+    },
+    autres_depenses: {
+      titre: 'Autres dépenses',
+      colonnes: [
+        { label: 'ESPÈCES', field: 'autres_depenses', value: ade },
+      ],
+    },
+    versement_banque: {
+      titre: 'Versements à la banque',
+      colonnes: [
+        { label: 'ESPÈCES', field: 'versement_banque', value: vb },
+      ],
+    },
+    versement_compta: {
+      titre: 'Versements à la comptabilité',
+      colonnes: [
+        { label: 'ESPÈCES', field: 'versement_compta', value: vc },
+      ],
+    },
+  };
 
   zoneResultats.innerHTML = `
     <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
@@ -164,47 +251,117 @@ function afficherRapport(r) {
             </tr>
           </thead>
           <tbody>
-            <!-- SUR EMISSIONS -->
+            <!-- SUR EMISSIONS (saisie/correction manuelle) -->
             <tr>
-              <td>SUR EMISSIONS</td>
+              <td>
+                SUR EMISSIONS
+                <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
+                        onclick="ouvrirEditionLigne('sur_emission')">
+                  <i class="fa-solid fa-pen fa-xs"></i>
+                </button>
+              </td>
               ${td(esp)} ${td(elec)} ${td(0)} ${td(0)} ${td(0)}
-              ${td(surEmission, 'fw-bold')}
+              ${td(esp + elec, 'fw-bold')}
             </tr>
-            <tr><td>POOL TPV</td>${td(0)}${td(0)}${td(0)}${td(0)}${td(0)}${td(0,'fw-bold')}</tr>
-            <tr><td>HORS ORASS</td>${td(0)}${td(0)}${td(0)}${td(0)}${td(0)}${td(0,'fw-bold')}</tr>
-            <tr><td>COURTAGE</td>${td(0)}${td(0)}${td(0)}${td(0)}${td(0)}${td(0,'fw-bold')}</tr>
-            <tr><td>DEPOTS CLIENTS</td>${td(0)}${td(0)}${td(0)}${td(0)}${td(0)}${td(0,'fw-bold')}</tr>
 
-            <!-- TOTAUX -->
+            <!-- POOL TPV (saisie manuelle) -->
+            <tr>
+              <td>
+                POOL TPV
+                <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
+                        onclick="ouvrirEditionLigne('pool_tpv')">
+                  <i class="fa-solid fa-pen fa-xs"></i>
+                </button>
+              </td>
+              ${td(poolTpv)}${td(0)}${td(0)}${td(0)}${td(0)}${td(poolTpv,'fw-bold')}
+            </tr>
+
+            <!-- HORS ORASS (saisie manuelle) -->
+            <tr>
+              <td>
+                HORS ORASS
+                <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
+                        onclick="ouvrirEditionLigne('hors_orass')">
+                  <i class="fa-solid fa-pen fa-xs"></i>
+                </button>
+              </td>
+              ${td(horsOrass)}${td(0)}${td(0)}${td(0)}${td(0)}${td(horsOrass,'fw-bold')}
+            </tr>
+
+            <!-- COURTAGE (saisie manuelle) -->
+            <tr>
+              <td>
+                COURTAGE
+                <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
+                        onclick="ouvrirEditionLigne('courtage')">
+                  <i class="fa-solid fa-pen fa-xs"></i>
+                </button>
+              </td>
+              ${td(courtage)}${td(0)}${td(0)}${td(0)}${td(0)}${td(courtage,'fw-bold')}
+            </tr>
+
+            <!-- DEPOTS CLIENTS (saisie manuelle) -->
+            <tr>
+              <td>
+                DEPOTS CLIENTS
+                <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
+                        onclick="ouvrirEditionLigne('depots_clients')">
+                  <i class="fa-solid fa-pen fa-xs"></i>
+                </button>
+              </td>
+              ${td(depotsClients)}${td(0)}${td(0)}${td(0)}${td(0)}${td(depotsClients,'fw-bold')}
+            </tr>
+
+            <!-- TOTAUX (calculé automatiquement — non éditable) -->
             <tr class="table-secondary fw-bold">
               <td>TOTAUX</td>
-              ${td(esp,'fw-bold')} ${td(elec,'fw-bold')} ${td(0,'fw-bold')}
-              ${td(0,'fw-bold')} ${td(0,'fw-bold')} ${td(surEmission,'fw-bold')}
+              ${td(totalEspeces,'fw-bold')} ${td(totalCheques,'fw-bold')} ${td(0,'fw-bold')}
+              ${td(0,'fw-bold')} ${td(0,'fw-bold')} ${td(totalEspeces + totalCheques,'fw-bold')}
             </tr>
 
-            <tr><td>REMBST CLIENTS/AVENANT</td>${td(0)}${td(0)}${td(0)}${td(0)}${td(0)}${td(0,'fw-bold')}</tr>
+            <!-- REMBST CLIENTS/AVENANT (saisie manuelle) -->
+            <tr>
+              <td>
+                REMBST CLIENTS/AVENANT
+                <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
+                        onclick="ouvrirEditionLigne('rembst_clients_avenant')">
+                  <i class="fa-solid fa-pen fa-xs"></i>
+                </button>
+              </td>
+              ${td(rembst)}${td(0)}${td(0)}${td(0)}${td(0)}${td(rembst,'fw-bold')}
+            </tr>
 
-            <!-- ENCAISSEMENTS NETS -->
+            <!-- ENCAISSEMENTS NETS (calculé automatiquement — non éditable) -->
             <tr class="table-secondary fw-bold">
               <td>ENCAISSEMENTS NETS (5) - (6)</td>
-              ${td(esp,'fw-bold')} ${td(elec,'fw-bold')} ${td(0,'fw-bold')}
-              ${td(0,'fw-bold')} ${td(0,'fw-bold')} ${td(surEmission,'fw-bold')}
+              ${td(encNetsEspeces,'fw-bold')} ${td(encNetsCheques,'fw-bold')} ${td(0,'fw-bold')}
+              ${td(0,'fw-bold')} ${td(0,'fw-bold')} ${td(encNetsEspeces + encNetsCheques,'fw-bold')}
             </tr>
 
-            <!-- SOLDE INITIAL -->
+            <!-- SOLDE INITIAL (saisie manuelle) -->
             <tr>
-              <td>SOLDE INITIAL (à l'ouverture)</td>
+              <td>
+                SOLDE INITIAL (à l'ouverture)
+                <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
+                        onclick="ouvrirEditionLigne('solde_initial')">
+                  <i class="fa-solid fa-pen fa-xs"></i>
+                </button>
+              </td>
               ${td(sp)} ${td(sc)} ${td(0)} ${td(0)} ${td(0)}
               ${td(sp + sc, 'fw-bold')}
             </tr>
 
-            <!-- COMMISSIONS PAYEES (auto depuis bordereau) -->
+            <!-- COMMISSIONS PAYEES (auto depuis bordereau, corrigible manuellement) -->
             <tr>
               <td>
                 COMMISSIONS PAYÉES
                 <span class="badge bg-success-subtle text-success border border-success-subtle ms-1 fw-normal">
                   <i class="fa-solid fa-file-check me-1"></i>bordereau
                 </span>
+                <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
+                        onclick="ouvrirEditionLigne('commissions_payees')">
+                  <i class="fa-solid fa-pen fa-xs"></i>
+                </button>
               </td>
               ${td(com)} ${td(0)} ${td(0)} ${td(0)} ${td(0)} ${td(com,'fw-bold')}
             </tr>
@@ -214,7 +371,7 @@ function afficherRapport(r) {
               <td>
                 AUTRES DÉPENSES
                 <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
-                        onclick="ouvrirEdition('autres_depenses', 'Autres dépenses', ${ade})">
+                        onclick="ouvrirEditionLigne('autres_depenses')">
                   <i class="fa-solid fa-pen fa-xs"></i>
                 </button>
               </td>
@@ -226,7 +383,7 @@ function afficherRapport(r) {
               <td>
                 VERSEMENTS À LA BANQUE
                 <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
-                        onclick="ouvrirEdition('versement_banque', 'Versements à la banque', ${vb})">
+                        onclick="ouvrirEditionLigne('versement_banque')">
                   <i class="fa-solid fa-pen fa-xs"></i>
                 </button>
               </td>
@@ -238,7 +395,7 @@ function afficherRapport(r) {
               <td>
                 VERSEMENTS À LA COMPTABILITÉ
                 <button class="btn btn-sm btn-outline-secondary ms-1 py-0 px-1 rounded-2"
-                        onclick="ouvrirEdition('versement_compta', 'Versements à la comptabilité', ${vc})">
+                        onclick="ouvrirEditionLigne('versement_compta')">
                   <i class="fa-solid fa-pen fa-xs"></i>
                 </button>
               </td>
@@ -275,6 +432,11 @@ function afficherRapport(r) {
       <div id="modal-edition" class="d-none border rounded-3 p-3 bg-light mb-3">
         <h6 class="fw-bold mb-3" id="modal-titre"></h6>
         <div class="row g-2 align-items-end">
+          <div class="col-auto d-none" id="modal-colonne-wrapper">
+            <label class="form-label small mb-1">Colonne à modifier</label>
+            <select id="modal-colonne" class="form-select" style="width:200px"
+                    onchange="changerColonneEdition()"></select>
+          </div>
           <div class="col-auto">
             <label class="form-label small mb-1">Montant (FCFA)</label>
             <input type="number" id="modal-valeur" class="form-control"
@@ -378,19 +540,57 @@ async function chargerRapport() {
 }
 
 // ── Édition manuelle ──────────────────────────────────────────────────────────
-let champEnEdition = null;
+// Rempli à chaque affichage du rapport (voir afficherRapport) :
+// { cléLigne: { titre, colonnes: [{ label, field, value }] } }
+let lignesEditables  = {};
+let ligneEnEditionCle = null;
+let champEnEdition    = null;
 
-function ouvrirEdition(champ, titre, valeurActuelle) {
-  champEnEdition = champ;
-  document.getElementById('modal-titre').textContent = `Modifier : ${titre}`;
-  document.getElementById('modal-valeur').value = valeurActuelle || 0;
+// Ouvre la modale pour une LIGNE entière. Si la ligne a plusieurs colonnes
+// modifiables (ex: SOLDE INITIAL → Espèces / Chèques-Élec), un sélecteur de
+// colonne apparaît pour choisir laquelle éditer.
+function ouvrirEditionLigne(cleLigne) {
+  const ligne = lignesEditables[cleLigne];
+  if (!ligne) return;
+
+  ligneEnEditionCle = cleLigne;
+  document.getElementById('modal-titre').textContent = `Modifier : ${ligne.titre}`;
+
+  const selectColonne  = document.getElementById('modal-colonne');
+  const wrapperColonne = document.getElementById('modal-colonne-wrapper');
+
+  if (ligne.colonnes.length > 1) {
+    selectColonne.innerHTML = ligne.colonnes
+      .map((c, i) => `<option value="${i}">${c.label}</option>`)
+      .join('');
+    selectColonne.value = 0;
+    wrapperColonne.classList.remove('d-none');
+  } else {
+    wrapperColonne.classList.add('d-none');
+  }
+
+  // Colonne sélectionnée par défaut : la première
+  champEnEdition = ligne.colonnes[0].field;
+  document.getElementById('modal-valeur').value = ligne.colonnes[0].value || 0;
   document.getElementById('modal-edition').classList.remove('d-none');
   document.getElementById('modal-valeur').focus();
 }
 
+// Appelé quand on change la colonne dans le sélecteur : recible le champ à
+// sauvegarder et pré-remplit le montant avec la valeur actuelle de cette colonne.
+function changerColonneEdition() {
+  const ligne = lignesEditables[ligneEnEditionCle];
+  if (!ligne) return;
+  const idx     = Number(document.getElementById('modal-colonne').value);
+  const colonne = ligne.colonnes[idx];
+  champEnEdition = colonne.field;
+  document.getElementById('modal-valeur').value = colonne.value || 0;
+}
+
 function fermerEdition() {
   document.getElementById('modal-edition').classList.add('d-none');
-  champEnEdition = null;
+  champEnEdition    = null;
+  ligneEnEditionCle = null;
 }
 
 async function validerEdition() {

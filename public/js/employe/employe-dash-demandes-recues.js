@@ -82,6 +82,36 @@ document.addEventListener('DOMContentLoaded', () => {
     return `<div class="d-flex flex-wrap gap-1">${liens.join('')}</div>`;
   }
 
+  // Le libellé d'une garantie "Autre" est tapé librement par le client :
+  // on échappe le HTML avant de l'injecter dans le tableau.
+  function echapperHTML(texte) {
+    const div = document.createElement('div');
+    div.textContent = texte ?? '';
+    return div.innerHTML;
+  }
+
+  function garantiesHTML(d) {
+    const garanties = Array.isArray(d.garanties) ? d.garanties : [];
+    if (garanties.length === 0) {
+      return '<span class="text-muted">Aucune</span>';
+    }
+    return `<div class="d-flex flex-wrap gap-1">${garanties
+      .map((g) => `<span class="badge bg-light text-dark border fw-normal">${echapperHTML(g.libelle ?? g)}</span>`)
+      .join('')}</div>`;
+  }
+
+  // Petit rond vert/rouge indiquant si la vignette a déjà été payée.
+  function vignetteHTML(d) {
+    const payee = !!d.vignette_payee;
+    const couleur = payee ? '#22c55e' : '#ef4444';
+    const titre = payee ? 'Vignette payée' : 'Vignette non payée';
+    return `
+      <div class="d-flex justify-content-center" title="${titre}">
+        <span class="d-inline-block rounded-circle" style="width:14px;height:14px;background-color:${couleur};"></span>
+      </div>
+    `;
+  }
+
   function celluleMotif(d) {
     if (d.statut_demande === 'rejete') {
       return d.motif_rejet ? d.motif_rejet : 'Motif non précisé';
@@ -116,6 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${d.prenom || '-'}</td>
         <td>${celluleTelephone(d.tel_whatsapp)}</td>
         <td>${duree}</td>
+        <td>${garantiesHTML(d)}</td>
+        <td>${vignetteHTML(d)}</td>
         <td>${documentsHTML(d)}</td>
         <td>${formatDate(d.date_demande)}</td>
         <td>${formatHeure(d.heure_demande)}</td>
@@ -137,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const liste = appliquerRecherche(demandesChargees);
 
     if (liste.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="10" class="text-center text-secondary py-4">Aucune demande à afficher.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12" class="text-center text-secondary py-4">Aucune demande à afficher.</td></tr>`;
       return;
     }
 
@@ -153,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function chargerDemandes(statut) {
     statutCourant = statut;
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-secondary py-4"><span class="spinner-border spinner-border-sm me-2"></span>Chargement...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" class="text-center text-secondary py-4"><span class="spinner-border spinner-border-sm me-2"></span>Chargement...</td></tr>`;
 
     try {
       const reponse = await fetch(endpoints[statut], { headers: authHeaders() });
@@ -163,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
       rafraichirTableau();
     } catch (erreur) {
       console.error('[Demandes reçues] Erreur :', erreur);
-      tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">Impossible de charger les demandes (${erreur.message}).</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12" class="text-center text-danger py-4">Impossible de charger les demandes (${erreur.message}).</td></tr>`;
     }
   }
 

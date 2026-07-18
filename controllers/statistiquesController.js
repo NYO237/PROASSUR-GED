@@ -23,4 +23,15 @@ async function getEvolution(req, res) {
   }
 }
 
-module.exports = { getSynthese, getEvolution };
+// GET /api/statistiques/top-employes?periode=jour|semaine|mois|tout
+async function getTopEmployes(req, res) {
+  try {
+    const data = await statistiquesService.getTopEmployes(req.query.periode);
+    return res.status(200).json({ success: true, ...data });
+  } catch (error) {
+    console.error('[statistiquesController] Erreur top employes :', error.message);
+    return res.status(500).json({ success: false, message: 'Erreur serveur.' });
+  }
+}
+
+module.exports = { getSynthese, getEvolution, getTopEmployes };

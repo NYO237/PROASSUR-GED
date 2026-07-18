@@ -181,6 +181,11 @@ async function scannerLotDossiers(req, res) {
           numero_attestation: doc.num_attestation || "-",
           nom_client:         doc.nom_assure     || "-",
           prenom_client:      doc.prenom_assure  || "-",
+          telephone_client:   doc.telephone_assure || "-",
+          adresse_client:     doc.adresse_assure   || "-",
+          profession_client:  doc.profession_assure || "-",
+          activite_client:    doc.activite_assure   || "-",
+          nom_producteur:     doc.nom_producteur     || "-",
           vehicule:           `${doc.marque || ""} ${doc.modele || ""}`.trim() || "-",
           nom_conducteur:     doc.nom_conducteur || "-",
           // prenom_conducteur:  doc.prenom_conducteur || "-",
@@ -192,6 +197,11 @@ async function scannerLotDossiers(req, res) {
         if (entry.numero_carte_rose  === "-" && doc.num_carte_rose)  entry.numero_carte_rose  = doc.num_carte_rose;
         if (entry.numero_attestation === "-" && doc.num_attestation) entry.numero_attestation = doc.num_attestation;
         if (entry.nom_client         === "-" && doc.nom_assure)      entry.nom_client         = doc.nom_assure;
+        if (entry.telephone_client   === "-" && doc.telephone_assure)  entry.telephone_client  = doc.telephone_assure;
+        if (entry.adresse_client     === "-" && doc.adresse_assure)    entry.adresse_client    = doc.adresse_assure;
+        if (entry.profession_client  === "-" && doc.profession_assure) entry.profession_client = doc.profession_assure;
+        if (entry.activite_client    === "-" && doc.activite_assure)   entry.activite_client   = doc.activite_assure;
+        if (entry.nom_producteur     === "-" && doc.nom_producteur)    entry.nom_producteur    = doc.nom_producteur;
         if (entry.vehicule           === "-" && (doc.marque || doc.modele)) {
           entry.vehicule = `${doc.marque || ""} ${doc.modele || ""}`.trim();
         }
@@ -214,6 +224,11 @@ async function scannerLotDossiers(req, res) {
 
       if (entree.numero_carte_rose  === "-" && doc.num_carte_rose)  entree.numero_carte_rose  = doc.num_carte_rose;
       if (entree.numero_attestation === "-" && doc.num_attestation) entree.numero_attestation = doc.num_attestation;
+      if (entree.telephone_client   === "-" && doc.telephone_assure)  entree.telephone_client  = doc.telephone_assure;
+      if (entree.adresse_client     === "-" && doc.adresse_assure)    entree.adresse_client    = doc.adresse_assure;
+      if (entree.profession_client  === "-" && doc.profession_assure) entree.profession_client = doc.profession_assure;
+      if (entree.activite_client    === "-" && doc.activite_assure)   entree.activite_client   = doc.activite_assure;
+      if (entree.nom_producteur     === "-" && doc.nom_producteur)    entree.nom_producteur    = doc.nom_producteur;
       if (entree.vehicule           === "-" && (doc.marque || doc.modele)) {
         entree.vehicule = `${doc.marque || ""} ${doc.modele || ""}`.trim();
       }

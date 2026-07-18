@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="/js/auth-guard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <style>
         :root {
             /* Palette ProAssur Refondue */
@@ -17,6 +18,13 @@
             --rouge-accent: #d72323;   /* Rouge dynamique (15%) */
             --bg-light: #f4f7f6;       /* Fond de la zone de contenu */
             --text-dark: #1e293b;
+            --slate-500: #64748b;
+            --line: #e2e8f0;
+
+            /* Rayons harmonisés avec statistiques.html */
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
         }
 
         body {
@@ -157,16 +165,103 @@
             letter-spacing: 0.5px;
             box-shadow: 0 4px 10px rgba(215, 35, 35, 0.25);
         }
+        .icone-cloche {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            color: var(--bleu-primary);
+            position: relative;
+            text-decoration: none;
+        }
+        .icone-cloche:hover {
+            color: var(--bleu-secondary);
+        }
 
-        /* Cartes de statistiques */
+        /* Cartes de statistiques (design harmonisé avec statistiques.html) */
         .stat-card {
-            border: none;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
+            background: #ffffff !important;
+            border: 1px solid var(--line) !important;
+            border-left: 4px solid transparent;
+            border-radius: var(--radius-lg) !important;
+            box-shadow: 0 4px 6px -1px rgba(15, 44, 89, 0.02) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(15, 44, 89, 0.05) !important;
+        }
+        .stat-card i { color: var(--bleu-secondary); }
+        .stat-card-neutre { border-left-color: var(--bleu-secondary); }
+        .stat-card-succes { border-left-color: #16a34a; }
+        .stat-card-succes i { color: #16a34a; }
+        .stat-card-danger { border-left-color: var(--rouge-accent); }
+        .stat-card-danger i { color: var(--rouge-accent); }
+        .stat-card-attente { border-left-color: #f59e0b; }
+        .stat-card-attente i { color: #f59e0b; }
+        .stat-card-primaire { border-left-color: var(--bleu-primary); }
+        .stat-card-primaire i { color: var(--bleu-primary); }
+
+        /* Sections du bloc statistiques : regroupement visuel net, sans
+           superposition, chacune sur son propre fond légèrement distinct. */
+        .stats-section {
+            padding: 1.25rem;
+            background-color: #fbfcfe;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+        }
+        .stats-section-title {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+            color: var(--slate-500);
+            margin-bottom: 1rem;
+        }
+        .chart-box {
+            background-color: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 6px -1px rgba(15, 44, 89, 0.02);
+        }
+        /* Conteneur à hauteur fixe pour les graphiques Chart.js (identique à statistiques.html) */
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            height: 270px;
+        }
+
+        /* Boutons de période : même style que #selecteur-periode sur statistiques.html */
+        #stats-periode-selector.btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        #stats-periode-selector.btn-group > .btn {
+            flex: none;
+            border-radius: var(--radius-md) !important;
+            border: 1px solid var(--line) !important;
+            color: var(--text-dark) !important;
+            background-color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0.5rem 1.2rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #stats-periode-selector.btn-group > .btn:hover {
+            background-color: #f1f5f9 !important;
+            color: var(--bleu-secondary) !important;
+            border-color: var(--bleu-secondary) !important;
             transform: translateY(-2px);
+        }
+        #stats-periode-selector.btn-group > .btn.active {
+            color: #ffffff !important;
+            background-color: var(--bleu-secondary) !important;
+            border-color: var(--bleu-secondary) !important;
+            box-shadow: 0 6px 15px rgba(23, 70, 162, 0.15) !important;
         }
         
         /* Zone de dépôt pour le scanner */
@@ -284,13 +379,118 @@
                     <h2 class="fw-bold mb-1" style="color: var(--bleu-primary);">Tableau de bord</h2>
                     <p class="text-secondary mb-0" id="message-bienvenue">Ravi de vous revoir, <strong>M. Owen</strong> !</p>
                 </div>
-                <span class="badge badge-statut rounded-pill fs-6 px-3 py-2">
-                    Statut : Employé
-                </span>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/notifications" class="icone-cloche" title="Notifications">
+                        <i class="fa-solid fa-bell fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notif-badge d-none" style="font-size:0.65rem;">0</span>
+                    </a>
+                    <span class="badge badge-statut rounded-pill fs-6 px-3 py-2" id="badge-statut-utilisateur">
+                        Employé
+                    </span>
+                </div>
             </div>
 
 
             <div id="tab-profil" class="tab-content-section">
+
+                <!-- STATISTIQUES DE L'EMPLOYÉ -->
+                <div class="row justify-content-center mb-4">
+                    <div class="col-12 col-xl-10">
+                        <div class="card border-0 shadow-sm p-4 bg-white rounded-4">
+
+                            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                                <h4 class="fw-bold mb-0" style="color: var(--bleu-primary);">
+                                    <i class="fa-solid fa-chart-pie text-primary me-2"></i>Mes statistiques
+                                </h4>
+                                <div class="btn-group" role="group" id="stats-periode-selector">
+                                    <button type="button" class="btn btn-sm btn-outline-primary active" data-periode="aujourdhui">Aujourd'hui</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-periode="semaine">Cette semaine</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-periode="mois">Ce mois</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-periode="tout_temps">Tout temps</button>
+                                </div>
+                            </div>
+
+                            <!-- Section 1 : Demandes traitées -->
+                            <div class="stats-section mb-3">
+                                <h6 class="stats-section-title mb-3"><i class="fa-solid fa-inbox me-2"></i>Demandes traitées</h6>
+                                <div class="row g-3">
+                                    <div class="col-6 col-md-3">
+                                        <div class="card stat-card stat-card-neutre p-3 text-center h-100">
+                                            <i class="fa-solid fa-inbox fs-3 mb-2"></i>
+                                            <div class="fs-4 fw-bold" id="stat-demandes-total">0</div>
+                                            <div class="text-secondary small">Reçues</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="card stat-card stat-card-succes p-3 text-center h-100">
+                                            <i class="fa-solid fa-circle-check fs-3 mb-2"></i>
+                                            <div class="fs-4 fw-bold" id="stat-demandes-validees">0</div>
+                                            <div class="text-secondary small">Validées</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="card stat-card stat-card-danger p-3 text-center h-100">
+                                            <i class="fa-solid fa-circle-xmark fs-3 mb-2"></i>
+                                            <div class="fs-4 fw-bold" id="stat-demandes-rejetees">0</div>
+                                            <div class="text-secondary small">Rejetées</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="card stat-card stat-card-attente p-3 text-center h-100">
+                                            <i class="fa-solid fa-hourglass-half fs-3 mb-2"></i>
+                                            <div class="fs-4 fw-bold" id="stat-demandes-attente">0</div>
+                                            <div class="text-secondary small">En attente</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 2 : Production (identifiée via nom_producteur vs Nom + Prénom) -->
+                            <div class="stats-section mb-4">
+                                <h6 class="stats-section-title mb-3"><i class="fa-solid fa-briefcase me-2"></i>Production</h6>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <div class="card stat-card stat-card-primaire p-3 text-center h-100">
+                                            <i class="fa-solid fa-file-contract fs-3 mb-2"></i>
+                                            <div class="fs-4 fw-bold" id="stat-contrats-produits">0</div>
+                                            <div class="text-secondary small">Contrats produits</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="card stat-card stat-card-primaire p-3 text-center h-100">
+                                            <i class="fa-solid fa-file-import fs-3 mb-2"></i>
+                                            <div class="fs-4 fw-bold" id="stat-documents-scannes">0</div>
+                                            <div class="text-secondary small">Documents scannés</div>
+                                            <div class="text-secondary mt-1" style="font-size: 0.72rem;" id="stat-documents-detail">
+                                                Cartes roses : 0 · Attestations : 0 · Contrats scannés : 0
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 3 : Évolution, sur deux graphiques distincts -->
+                            <div class="stats-section">
+                                <h6 class="stats-section-title mb-3"><i class="fa-solid fa-chart-line me-2"></i>Évolution (30 derniers jours)</h6>
+                                <div class="row g-3">
+                                    <div class="col-12 col-lg-6">
+                                        <div class="chart-box p-3 h-100">
+                                            <p class="text-secondary small fw-semibold mb-2">Demandes traitées</p>
+                                            <div class="chart-wrap"><canvas id="chart-evolution-demandes"></canvas></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-6">
+                                        <div class="chart-box p-3 h-100">
+                                            <p class="text-secondary small fw-semibold mb-2">Contrats produits</p>
+                                            <div class="chart-wrap"><canvas id="chart-evolution-contrats"></canvas></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row justify-content-center">
                     <div class="col-12 col-xl-8 card border-0 shadow-sm p-4 p-md-5 bg-white rounded-4">
                         <form action="" class="row g-3" id="formulaire_profil">
@@ -418,6 +618,7 @@
 
     <script src="/bootstrap-js/bootstrap.bundle.min.js"></script>
     <script src="/js/employe/employe-dash-profil.js"></script>
+    <script src="/js/employe/notifications-badge.js"></script>
     <script src="/js/auth-guard.js"></script>
 </body>
 </html>

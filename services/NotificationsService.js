@@ -50,4 +50,60 @@ async function getAlertesContrats() {
   return rows;
 }
 
-module.exports = { getAlertesContrats };
+// ─── Demandes de contrat non traitées ─────────────────────────────────────────
+//
+// Logique : une demande est considérée "non traitée" tant que son
+// statut_demande n'est ni 'valide' ni 'rejete' (donc typiquement 'En attente').
+// On alerte si elle est en attente depuis plus de SEUIL_ALERTE_MINUTES (2h).
+//
+// Contrainte horaire : ces alertes ne doivent apparaître qu'en journée. Entre
+// HEURE_FIN_JOURNEE (20h) et HEURE_DEBUT_JOURNEE (6h), on ne génère aucune
+// alerte de demande — même si des demandes dépassent le seuil de 2h, on
+// considère qu'il n'y a personne pour les traiter la nuit. Dès 6h, les
+// demandes toujours en attente réapparaissent avec le retard réellement
+// accumulé (qui peut donc dépasser largement 2h après une nuit entière).
+
+const HEURE_DEBUT_JOURNEE = 6;    // 06h00 : les alertes de demandes reprennent
+const HEURE_FIN_JOURNEE = 20;     // 20h00 : les alertes de demandes s'arrêtent
+const SEUIL_ALERTE_MINUTES = 120; // 2h sans traitement avant alerte
+
+function estDansPlageHoraireDeNotification(date = new Date()) {
+  const heure = date.getHours();
+  return heure >= HEURE_DEBUT_JOURNEE && heure < HEURE_FIN_JOURNEE;
+}
+
+async function getAlertesDemandesNonTraitees() {
+  // Rien à faire la nuit (20h-6h) : on court-circuite avant même la requête SQL.
+  if (!estDansPlageHoraireDeNotification()) {
+    return [];
+  }
+
+  const [rows] = await pool.query(
+    `
+    SELECT
+      d.id_demande,
+      d.date_demande,
+      d.heure_demande,
+      d.statut_demande,
+      TIMESTAMPDIFF(MINUTE, TIMESTAMP(d.date_demande, d.heure_demande), NOW()) AS minutes_ecoulees,
+      c.id_utilisateur     AS id_client,
+      c.nom                AS nom_client,
+      c.prenom             AS prenom_client,
+      c.telephone_whatsapp AS telephone_client
+    FROM demande_contrat d
+    INNER JOIN client c ON c.id_utilisateur = d.id_client
+    WHERE d.statut_demande NOT IN ('valide', 'rejete')
+      AND TIMESTAMP(d.date_demande, d.heure_demande) <= DATE_SUB(NOW(), INTERVAL ? MINUTE)
+    ORDER BY minutes_ecoulees DESC
+    `,
+    [SEUIL_ALERTE_MINUTES]
+  );
+
+  return rows;
+}
+
+module.exports = {
+  getAlertesContrats,
+  getAlertesDemandesNonTraitees,
+  estDansPlageHoraireDeNotification,
+};

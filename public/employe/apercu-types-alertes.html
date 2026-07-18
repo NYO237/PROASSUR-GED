@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProAssur - Aperçu des types d'alertes (notifications)</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bleu-primary: #0f2c59;
+            --bleu-secondary: #1746a2;
+            --rouge-accent: #d72323;
+            --bg-light: #f8fafc;
+            --text-dark: #1e293b;
+        }
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+        }
+        .page-wrap { max-width: 880px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+        .page-header { border-bottom: 2px solid #e2e8f0; padding-bottom: 1.5rem; margin-bottom: 2.5rem; }
+
+        .type-bloc { margin-bottom: 2.75rem; }
+        .type-entete { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.35rem; }
+        .type-num { font-weight: 700; font-size: 0.8rem; color: #94a3b8; letter-spacing: 0.5px; }
+        .type-titre { font-weight: 700; font-size: 1.05rem; margin: 0; }
+        .type-regle { color: #64748b; font-size: 0.9rem; margin-bottom: 1rem; max-width: 640px; }
+        .type-regle code { background: #eef2f7; padding: 0.1rem 0.4rem; border-radius: 5px; color: var(--bleu-primary); }
+
+        .notif-groupe-titre { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 0.75rem; }
+        .notif-card { border-radius: 14px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border-left: 5px solid var(--bleu-secondary); padding: 1rem 1.25rem; margin-bottom: 0.6rem; background: #ffffff; }
+        .notif-card.palier-expire { border-left-color: #be123c; }
+        .notif-card.palier-j7     { border-left-color: #d72323; }
+        .notif-card.palier-j14    { border-left-color: #b45309; }
+        .notif-card.palier-j30    { border-left-color: #1746a2; }
+        .notif-card.palier-demande-attente { border-left-color: #7c3aed; }
+        .notif-card.palier-demande-urgente { border-left-color: #a21caf; }
+
+        .badge-palier { font-weight: 600; border-radius: 30px; padding: 5px 14px; font-size: 0.8rem; white-space: nowrap; }
+        .badge-palier.palier-expire { color: #be123c; background-color: #ffe4e6; }
+        .badge-palier.palier-j7     { color: #be123c; background-color: #ffe4e6; }
+        .badge-palier.palier-j14    { color: #b45309; background-color: #fef3c7; }
+        .badge-palier.palier-j30    { color: #1746a2; background-color: #dbeafe; }
+        .badge-palier.palier-demande-attente { color: #7c3aed; background-color: #ede9fe; }
+        .badge-palier.palier-demande-urgente { color: #a21caf; background-color: #fae8ff; }
+
+        .section-legende { background: #eef2ff; border: 1px solid #dbe3ff; border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 2.5rem; }
+        .section-legende h6 { font-weight: 700; color: var(--bleu-primary); margin-bottom: 0.5rem; }
+        .horaire-pill { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 30px; padding: 0.3rem 0.8rem; font-size: 0.82rem; font-weight: 600; color: #475569; }
+    </style>
+</head>
+<body>
+<div class="page-wrap">
+
+    <div class="page-header">
+        <h2 class="fw-bold mb-1" style="color: var(--bleu-primary);">Aperçu des types d'alertes</h2>
+        <p class="text-secondary mb-0">
+            Page de référence statique (pas de données réelles) montrant à quoi ressemble chaque type
+            de carte affiché sur la page <strong>Notifications</strong>.
+        </p>
+    </div>
+
+    <div class="section-legende">
+        <h6><i class="fa-solid fa-circle-info me-2"></i>Règle horaire pour les demandes</h6>
+        <p class="mb-2 text-secondary" style="font-size:0.9rem;">
+            Les alertes de type <strong>« Demande non traitée »</strong> ne sont générées qu'en journée.
+            La nuit, aucune notification de ce type n'apparaît, même si des demandes dépassent le seuil de 2h.
+        </p>
+        <span class="horaire-pill"><i class="fa-solid fa-sun text-warning"></i> 06h00 → 20h00 : alertes actives</span>
+        <span class="horaire-pill ms-2"><i class="fa-solid fa-moon text-secondary"></i> 20h00 → 06h00 : aucune alerte de demande</span>
+        <p class="mb-0 mt-2 text-secondary" style="font-size:0.85rem;">
+            Les alertes de <strong>contrats</strong>, elles, ne sont pas concernées par cette règle : elles restent visibles à toute heure.
+        </p>
+    </div>
+
+    <!-- 1. Demande en attente depuis 2h à 4h -->
+    <div class="type-bloc">
+        <div class="type-entete">
+            <span class="type-num">TYPE 1</span>
+            <h5 class="type-titre">Demande en attente (2h – 4h)</h5>
+        </div>
+        <p class="type-regle">
+            Déclenchée quand une demande de contrat a le statut <code>En attente</code> depuis plus de
+            <code>2h</code>, uniquement entre 6h et 20h.
+        </p>
+        <div class="notif-groupe-titre" style="color:#7c3aed;">Demandes en attente depuis plus de 2h (1)</div>
+        <div class="notif-card palier-demande-attente d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <div class="fw-bold"><i class="fa-solid fa-file-circle-question me-1"></i> Nouvelle demande de contrat non traitée</div>
+                <div class="text-secondary small">Client : Bryant Zoua · Tél : 671646335</div>
+                <div class="text-secondary small">Reçue le 17/07/2026 à 10:15</div>
+            </div>
+            <span class="badge-palier palier-demande-attente">En attente depuis 2h35</span>
+        </div>
+    </div>
+
+    <!-- 2. Demande en attente depuis plus de 4h -->
+    <div class="type-bloc">
+        <div class="type-entete">
+            <span class="type-num">TYPE 2</span>
+            <h5 class="type-titre">Demande en attente (plus de 4h)</h5>
+        </div>
+        <p class="type-regle">
+            Même règle que le type précédent, mais l'attente a dépassé <code>4h</code> : c'est un retard
+            jugé anormalement long, mis en évidence par une teinte plus soutenue.
+        </p>
+        <div class="notif-groupe-titre" style="color:#a21caf;">Demandes en attente depuis plus de 4h (1)</div>
+        <div class="notif-card palier-demande-urgente d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <div class="fw-bold"><i class="fa-solid fa-file-circle-question me-1"></i> Nouvelle demande de contrat non traitée</div>
+                <div class="text-secondary small">Client : André Ngouofo · Tél : 690198883</div>
+                <div class="text-secondary small">Reçue le 17/07/2026 à 06:20</div>
+            </div>
+            <span class="badge-palier palier-demande-urgente">En attente depuis 6h10</span>
+        </div>
+    </div>
+
+    <!-- 3. Contrat expiré -->
+    <div class="type-bloc">
+        <div class="type-entete">
+            <span class="type-num">TYPE 3</span>
+            <h5 class="type-titre">Contrat expiré</h5>
+        </div>
+        <p class="type-regle">
+            Le contrat le plus récent du véhicule a une <code>date_echeance</code> déjà passée et aucun
+            nouveau contrat n'a été enregistré depuis.
+        </p>
+        <div class="notif-groupe-titre" style="color:#be123c;">Contrats expirés (1)</div>
+        <div class="notif-card palier-expire d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <div class="fw-bold">Toyota Corolla — LT 1234 AB</div>
+                <div class="text-secondary small">Assuré : André Ngouofo · Police : 2012/1002000704</div>
+                <div class="text-secondary small">Échéance : 05/07/2026 — Expiré depuis 12 jours</div>
+            </div>
+            <span class="badge-palier palier-expire">Expiré depuis 12 jours</span>
+        </div>
+    </div>
+
+    <!-- 4. J-7 -->
+    <div class="type-bloc">
+        <div class="type-entete">
+            <span class="type-num">TYPE 4</span>
+            <h5 class="type-titre">Échéance dans moins de 7 jours</h5>
+        </div>
+        <p class="type-regle">
+            <code>0 &lt; jours_restants ≤ 7</code>.
+        </p>
+        <div class="notif-groupe-titre" style="color:#be123c;">Échéance dans moins de 7 jours (1)</div>
+        <div class="notif-card palier-j7 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <div class="fw-bold">Hyundai Tucson — LT 5678 CD</div>
+                <div class="text-secondary small">Assuré : Bryant Zoua · Police : 2012/1007000344</div>
+                <div class="text-secondary small">Échéance : 22/07/2026 — Expire dans 5 jours</div>
+            </div>
+            <span class="badge-palier palier-j7">Expire dans 5 jours</span>
+        </div>
+    </div>
+
+    <!-- 5. J-14 -->
+    <div class="type-bloc">
+        <div class="type-entete">
+            <span class="type-num">TYPE 5</span>
+            <h5 class="type-titre">Échéance dans moins de 14 jours</h5>
+        </div>
+        <p class="type-regle">
+            <code>7 &lt; jours_restants ≤ 14</code>.
+        </p>
+        <div class="notif-groupe-titre" style="color:#b45309;">Échéance dans moins de 14 jours (1)</div>
+        <div class="notif-card palier-j14 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <div class="fw-bold">Kia Sportage — LT 9012 EF</div>
+                <div class="text-secondary small">Assuré : André Ngouofo · Police : 2012/1002000811</div>
+                <div class="text-secondary small">Échéance : 29/07/2026 — Expire dans 12 jours</div>
+            </div>
+            <span class="badge-palier palier-j14">Expire dans 12 jours</span>
+        </div>
+    </div>
+
+    <!-- 6. J-30 -->
+    <div class="type-bloc mb-0">
+        <div class="type-entete">
+            <span class="type-num">TYPE 6</span>
+            <h5 class="type-titre">Échéance dans moins de 30 jours</h5>
+        </div>
+        <p class="type-regle">
+            <code>14 &lt; jours_restants ≤ 30</code>.
+        </p>
+        <div class="notif-groupe-titre" style="color:#1746a2;">Échéance dans moins de 30 jours (1)</div>
+        <div class="notif-card palier-j30 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <div class="fw-bold">Renault Duster — LT 3456 GH</div>
+                <div class="text-secondary small">Assuré : Bryant Zoua · Police : 2012/1007000955</div>
+                <div class="text-secondary small">Échéance : 12/08/2026 — Expire dans 26 jours</div>
+            </div>
+            <span class="badge-palier palier-j30">Expire dans 26 jours</span>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

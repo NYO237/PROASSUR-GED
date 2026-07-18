@@ -195,6 +195,36 @@ async function modifierUtilisateur(req, res) {
     }
 }
 
+// GET /api/utilisateurs/stats_client/:id
+async function statistiquesClient(req, res) {
+    try {
+        const idUtilisateur = req.params.id;
+        const stats = await utilisateursService.statistiquesClient(idUtilisateur);
+        return res.status(200).json({ success: true, stats });
+    } catch (error) {
+        console.error("Erreur dans utilisateursController - statistiquesClient :", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erreur serveur lors de la récupération des statistiques du client.",
+        });
+    }
+}
+
+// GET /api/utilisateurs/stats_employe/:id
+async function statistiquesEmploye(req, res) {
+    try {
+        const idUtilisateur = req.params.id;
+        const stats = await utilisateursService.statistiquesEmploye(idUtilisateur);
+        return res.status(200).json({ success: true, stats });
+    } catch (error) {
+        console.error("Erreur dans utilisateursController - statistiquesEmploye :", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erreur serveur lors de la récupération des statistiques de l'employé.",
+        });
+    }
+}
+
 module.exports = {
     afficher_infos_clients,
     afficher_infos_employes,
@@ -202,4 +232,6 @@ module.exports = {
     basculerStatus,
     modifierUtilisateur,
     creerUtilisateur,
+    statistiquesClient,
+    statistiquesEmploye,
 };

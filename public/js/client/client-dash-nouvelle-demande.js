@@ -35,8 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    // Nettoyage du champ libre "autre garantie" (évite d'envoyer une
+    // chaîne composée uniquement d'espaces).
+    const inputAutreGarantie = document.getElementById('input-autre-garantie');
+    if (inputAutreGarantie) {
+      inputAutreGarantie.value = inputAutreGarantie.value.trim();
+    }
+
     // FormData(form) reprend automatiquement tous les champs nommés du
-    // formulaire (fichiers + le nouveau <select name="duree">).
+    // formulaire : fichiers, le <select name="duree">, les cases à cocher
+    // "garanties" (une entrée par case cochée), le champ libre
+    // "autre_garantie" et la case "vignette_payee" (absente si décochée).
     const donnees = new FormData(form);
 
     btnSoumettre.disabled = true;
